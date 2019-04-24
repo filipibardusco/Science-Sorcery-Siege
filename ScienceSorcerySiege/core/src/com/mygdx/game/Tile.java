@@ -6,7 +6,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 
 public class Tile {
-	int type;
+	private int type;
 	private Texture tileImg;
 	private Sprite area;
 	
@@ -15,7 +15,18 @@ public class Tile {
 	public static final int WATER = 2;
 	
 	public Tile(int t) {
-		
+		type = t;
+		if(type == PLAIN) {
+			
+		} else if(type == FOREST) {
+			
+		} else if(type == WATER) {
+			
+		}
+	}
+	
+	public int type() {
+		return type;
 	}
 	
 }
