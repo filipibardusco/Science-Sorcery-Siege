@@ -10,11 +10,12 @@ public class Tile {
 	private Texture tileImg;
 	private Sprite area;
 	
+	private static int SIDELEN = 40;
 	public static final int PLAIN = 0;
 	public static final int FOREST = 1;
 	public static final int WATER = 2;
 	
-	public Tile(int t) {
+	public Tile(int t, int x, int y) {
 		type = t;
 		if(type == PLAIN) {
 			
@@ -27,6 +28,10 @@ public class Tile {
 	
 	public int type() {
 		return type;
+	}
+	
+	public Sprite sprite() {
+		return area;
 	}
 	
 }
