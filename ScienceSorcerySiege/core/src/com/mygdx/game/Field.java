@@ -4,7 +4,9 @@ package com.mygdx.game;
 
 public class Field {
 	public static Tile[][] map;
+	public int size;
 	public Field(int size) {
+		this.size = size;
 		map = new Tile[size][size];
 		generate(size);
 	}
@@ -20,24 +22,24 @@ public class Field {
 		for(int y = 1; y < size - 1; y++) {
 			for(int x = y; x < size - 1; x++) {
 				int tileDeterminer = randint(1, 100); //Using a random integer to determine a random tile
-				Tile tile;
+				int tileType;
 				int lakeMod = 0;
 				if(map[x - 1][y].type() == Tile.WATER || map[x][y - 1].type() == Tile.WATER) { //Making it more likely to create water tiles next to other water tiles to simulate more realistic lake structures
 					lakeMod += 3;
 				}
 				int forestMod = 0;
-				if(map[x - 1][y].type() == Tile.WATER || map[x][y - 1].type() == Tile.WATER) { //Making it more likely to create forest tiles next to other forest tiles to simulate more realistic forest structures
+				if(map[x - 1][y].type() == Tile.FOREST || map[x][y - 1].type() == Tile.FOREST) { //Making it more likely to create forest tiles next to other forest tiles to simulate more realistic forest structures
 					forestMod += 5;
 				}
 				if(tileDeterminer <= 5 + lakeMod) {
-					tile = new Tile(Tile.WATER, x, y);
+					tileType = Tile.WATER;
 				} else if(tileDeterminer <= 40 + forestMod) {
-					tile = new Tile(Tile.FOREST, x, y);
+					tileType = Tile.FOREST;
 				} else {
-					tile = new Tile(Tile.PLAIN, x, y);
+					tileType = Tile.PLAIN;
 				}
-				map[x][y] = tile; //Setting tiles to be symmetric across a diagonal
-				map[y][x] = tile;
+				map[x][y] = new Tile(tileType, x, y); //Setting tiles to be symmetric across a diagonal
+				map[y][x] = new Tile(tileType, y, x);
 			}
 		}
 	}
