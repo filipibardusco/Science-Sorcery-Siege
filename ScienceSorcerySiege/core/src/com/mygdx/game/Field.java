@@ -25,15 +25,15 @@ public class Field {
 				int tileType;
 				int lakeMod = 0;
 				if(map[x - 1][y].type() == Tile.WATER || map[x][y - 1].type() == Tile.WATER) { //Making it more likely to create water tiles next to other water tiles to simulate more realistic lake structures
-					lakeMod += 3;
+					lakeMod += 15;
 				}
 				int forestMod = 0;
 				if(map[x - 1][y].type() == Tile.FOREST || map[x][y - 1].type() == Tile.FOREST) { //Making it more likely to create forest tiles next to other forest tiles to simulate more realistic forest structures
-					forestMod += 5;
+					forestMod += 8;
 				}
-				if(tileDeterminer <= 5 + lakeMod) {
+				if(tileDeterminer <= 6 + lakeMod) {
 					tileType = Tile.WATER;
-				} else if(tileDeterminer <= 40 + forestMod) {
+				} else if(tileDeterminer <= 30 + forestMod) {
 					tileType = Tile.FOREST;
 				} else {
 					tileType = Tile.PLAIN;
