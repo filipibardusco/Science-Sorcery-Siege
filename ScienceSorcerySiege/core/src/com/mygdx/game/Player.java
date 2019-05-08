@@ -17,10 +17,11 @@ public class Player extends Sprite implements InputProcessor {
 
     private TiledMapTileLayer collisionLayer;
 
-    public Player(Sprite sprite) {
+    public Player(Sprite sprite, TiledMapTileLayer c) {
         super(sprite);
+        setSize(64, 64);
+        collisionLayer = c;
     }
-
     public void draw(SpriteBatch spriteBatch) {
         update(Gdx.graphics.getDeltaTime());
         super.draw(spriteBatch);
@@ -28,14 +29,12 @@ public class Player extends Sprite implements InputProcessor {
 
     public void update(float delta) {
         
-
+    	
         // save old position
         float oldX = getX(), oldY = getY(), tileWidth = collisionLayer.getTileWidth(), tileHeight = collisionLayer.getTileHeight();
         boolean collisionX = false, collisionY = false;
-
         // move on x
         setX(getX() + velocity.x * delta);
-
         if(velocity.x < 0) { // going left
             // top left
             collisionX = collisionLayer.getCell((int) (getX() / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().containsKey("blocked");
@@ -99,6 +98,7 @@ public class Player extends Sprite implements InputProcessor {
             setY(oldY);
             velocity.y = 0;
         }
+        
     }
 
     public Vector2 getVelocity() {
@@ -134,6 +134,11 @@ public class Player extends Sprite implements InputProcessor {
                 break;
             case Keys.D:
                 velocity.x = speed;
+            case Keys.S:
+                velocity.y = -speed;
+                break;
+            case Keys.W:
+                velocity.y = speed;
         }
         return true;
     }
@@ -144,6 +149,9 @@ public class Player extends Sprite implements InputProcessor {
             case Keys.A:
             case Keys.D:
                 velocity.x = 0;
+            case Keys.S:
+            case Keys.W:
+                velocity.y = 0;
         }
         return true;
     }
