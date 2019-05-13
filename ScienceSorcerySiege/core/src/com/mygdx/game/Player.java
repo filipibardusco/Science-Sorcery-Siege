@@ -1,40 +1,70 @@
 package com.mygdx.game;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
+import com.badlogic.gdx.math.Interpolation;
 import com.badlogic.gdx.math.Vector2;
+
+import java.security.Key;
 
 public class Player extends Sprite implements InputProcessor {
 
     /** the movement velocity */
     private Vector2 velocity = new Vector2();
 
-    private float speed = 60 * 2;
+    private float speed = 4;
+
 
     private TiledMapTileLayer collisionLayer;
+
+
 
     public Player(Sprite sprite, TiledMapTileLayer c) {
         super(sprite);
         setSize(64, 64);
         collisionLayer = c;
     }
+
     public void draw(SpriteBatch spriteBatch) {
-        update(Gdx.graphics.getDeltaTime());
+
         super.draw(spriteBatch);
+//        update(Gdx.graphics.getRawDeltaTime());
     }
 
+
+
     public void update(float delta) {
-        
-    	
+
+
         // save old position
         float oldX = getX(), oldY = getY(), tileWidth = collisionLayer.getTileWidth(), tileHeight = collisionLayer.getTileHeight();
         boolean collisionX = false, collisionY = false;
         // move on x
-        setX(getX() + velocity.x * delta);
+        if ((Gdx.input.isKeyPressed(Keys.D) || Gdx.input.isKeyPressed(Keys.A))){
+            System.out.println(getX());
+            if(Gdx.input.isKeyPressed(Keys.D)){
+                velocity.x = speed;
+            } else{
+                velocity.x = -speed;
+            }
+            translateX(velocity.x);
+        }
+        if (Gdx.input.isKeyPressed(Keys.W) || Gdx.input.isKeyPressed(Keys.S)){
+            if(Gdx.input.isKeyPressed(Keys.W)){
+                velocity.y = speed;
+            }else{
+                velocity.y = -speed;
+            }
+            translateY(velocity.y);
+        }
+
+
+/*
         if(velocity.x < 0) { // going left
             // top left
             collisionX = collisionLayer.getCell((int) (getX() / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().containsKey("blocked");
@@ -64,9 +94,6 @@ public class Player extends Sprite implements InputProcessor {
             setX(oldX);
             velocity.x = 0;
         }
-
-        // move on y
-        setY(getY() + velocity.y * delta);
 
         if(velocity.y < 0) { // going down
             // bottom left
@@ -98,7 +125,9 @@ public class Player extends Sprite implements InputProcessor {
             setY(oldY);
             velocity.y = 0;
         }
-        
+
+ */
+
     }
 
     public Vector2 getVelocity() {
