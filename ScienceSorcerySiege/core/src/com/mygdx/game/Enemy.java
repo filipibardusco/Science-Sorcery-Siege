@@ -1,32 +1,44 @@
 //This class handles enemy creation, movement, and management
 package com.mygdx.game;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 
-public class Enemy {
+public class Enemy extends Sprite{
 	private int health; 
 	private int attackPower; //Determines how much damage an enemy deals to a player
 	private int level;
-	private Texture enemyImg = new Texture("badlogic.jpg");
-	private Sprite enemySprite;
 	
 	private static final int DEFMOVESPEED = 3; //The default movement speed of an enemy assuming no terrain
+	public static final int RIGHT = 1;
+	public static final int LEFT = -1;
+	
+    public void draw(SpriteBatch spriteBatch) {
+        //update(Gdx.graphics.getDeltaTime());
+        super.draw(spriteBatch);
+    }
 	
 	public Enemy(int level, int x, int y) {
 		//Creates the enemy sprite and sets it's position
+		super(new Sprite(new Texture("badlogic.jpg")));
 		this.level = level;
 		health = 5 + level * level;
 		attackPower = 1 + level * 2;
-		enemySprite = new Sprite(enemyImg);
-		enemySprite.setPosition(x, y);
+		setPosition(x, y);
 	}
 	
-	public void Move() {
-		//Moves the enemy randomly if no player is nearby
-		if(true) { 
-			enemySprite.translate(randint(0, 1) * DEFMOVESPEED, randint(0, 1) * DEFMOVESPEED);
-		}
+	
+	
+	public void moveH(int dir) {
+		//Moves the enemy horizontally in the direction indicated
+		
+	}
+	
+	public void moveV() {
+		//Moves the enemy one tile vertically in the direction indicated
 	}
 	
 	public int takeDamage(int dmg) {
@@ -37,10 +49,6 @@ public class Enemy {
 			gold += 20 * (level + 5);
 		}
 		return gold;
-	}
-	
-	public Sprite sprite() {
-		return enemySprite;
 	}
 	
 	public static int randint(int low, int high){

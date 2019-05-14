@@ -4,67 +4,78 @@
  <tile id="1">
   <properties>
    <property name="TerrainType" value="forest"/>
+   <property name="blocked" type="bool" value="false"/>
   </properties>
   <image width="32" height="32" source="ForestTile.png"/>
  </tile>
  <tile id="2">
   <properties>
    <property name="TerrainType" value="plain"/>
+   <property name="blocked" type="bool" value="false"/>
   </properties>
   <image width="32" height="32" source="PlainTile.png"/>
  </tile>
  <tile id="6" type="Base">
   <properties>
    <property name="TerrainType" value="wall"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png (1).png"/>
+  <image width="32" height="32" source="Base-1.png (1).png"/>
  </tile>
  <tile id="7" type="Base">
   <properties>
    <property name="TerrainType" value="wall"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png (2).png"/>
+  <image width="32" height="32" source="Base-1.png (2).png"/>
  </tile>
  <tile id="8" type="Base">
   <properties>
    <property name="TerrainType" value="wall"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png (3).png"/>
+  <image width="32" height="32" source="Base-1.png (3).png"/>
  </tile>
  <tile id="9" type="Base">
   <properties>
    <property name="TerrainType" value="base"/>
+   <property name="blocked" type="bool" value="false"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png (4).png"/>
+  <image width="32" height="32" source="Base-1.png (4).png"/>
  </tile>
  <tile id="10" type="Base">
   <properties>
    <property name="TerrainType" value="wall"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png (5).png"/>
+  <image width="32" height="32" source="Base-1.png (5).png"/>
  </tile>
  <tile id="11" type="Base">
   <properties>
    <property name="TerrainType" value="wall"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../Base-1.png.png"/>
+  <image width="32" height="32" source="Base-1.png.png"/>
  </tile>
  <tile id="12" type="Water">
   <properties>
    <property name="TerrainType" value="water"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../WaterTile-1.png.png"/>
+  <image width="32" height="32" source="WaterTile-1.png.png"/>
  </tile>
  <tile id="13" type="Water">
   <properties>
    <property name="TerrainType" value="water"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../WaterTile-2.png (1).png"/>
+  <image width="32" height="32" source="WaterTile-2.png (1).png"/>
  </tile>
  <tile id="14" type="Water">
   <properties>
    <property name="TerrainType" value="water"/>
+   <property name="blocked" type="bool" value="true"/>
   </properties>
-  <image width="32" height="32" source="../../../WaterTile-3.png.png"/>
+  <image width="32" height="32" source="WaterTile-3.png.png"/>
  </tile>
 </tileset>
