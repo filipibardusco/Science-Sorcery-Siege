@@ -95,8 +95,8 @@ public class Field{
 		
 	}
 	
-	public void setBase(int x, int y) {
-		//Sets the player's base at Tile position (x, y)
+	public boolean setBase(int x, int y) {
+		//Sets the player's base at Tile position (x, y) and returns whether it was successful or not
 		if(x > 0 && x < size && y > 1) {
 			Cell TR = new Cell();
 			Cell TM = new Cell();
@@ -122,6 +122,9 @@ public class Field{
 			ground.getCell(x - 1, y - 2).setTile(tiles.getTile(PLAIN));
 			ground.getCell(x, y - 2).setTile(tiles.getTile(PLAIN));
 			ground.getCell(x + 1, y - 2).setTile(tiles.getTile(PLAIN));
+			return true;
+		} else {
+			return false;
 		}
 	}
 	
