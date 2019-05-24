@@ -16,8 +16,8 @@ import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 public class Field{
 	public TiledMap map;
 	public int size;
-	public TiledMapTileLayer ground;
-	public TiledMapTileLayer objects;
+	public static TiledMapTileLayer ground;
+	public static TiledMapTileLayer objects;
 	//Don't ask me why these IDs are all one higher than they are in the Field.tsx file, I really don't know but they are
 	private static final int FOREST = 2;
 	private static final int PLAIN = 3;
@@ -66,7 +66,7 @@ public class Field{
 				int tileDeterminer = randint(1, 100); //Using a random integer to determine a random tile
 				int lakeMod = 0;
 				if(ground.getCell(x - 1, y).getTile().getId() == WATER1 || ground.getCell(x, y - 1).getTile().getId() == WATER1) { //Making it more likely to create water tiles next to other water tiles to simulate more realistic lake structures
-					lakeMod += 15;
+					lakeMod += 20;
 				}
 				int forestMod = 0;
 				if(ground.getCell(x - 1, y).getTile().getId() == FOREST || ground.getCell(x, y - 1).getTile().getId() == FOREST) { //Making it more likely to create forest tiles next to other forest tiles to simulate more realistic forest structures
@@ -97,7 +97,7 @@ public class Field{
 	
 	public boolean setBase(int x, int y) {
 		//Sets the player's base at Tile position (x, y) and returns whether it was successful or not
-		if(x > 0 && x < size && y > 1) {
+		if(x > 0 && x < size && y < size - 1) {
 			Cell TR = new Cell();
 			Cell TM = new Cell();
 			Cell TL = new Cell();
@@ -110,18 +110,18 @@ public class Field{
 			BR.setTile(tiles.getTile(BASEBR));
 			BM.setTile(tiles.getTile(BASEBM));
 			BL.setTile(tiles.getTile(BASEBL));
-			objects.setCell(x - 1, y - 1, TL);
-			objects.setCell(x, y - 1, TM);
-			objects.setCell(x + 1, y - 1, TR);
-			objects.setCell(x - 1, y - 2, BL);
-			objects.setCell(x, y - 2, BM);
-			objects.setCell(x + 1, y - 2, BR);
-			ground.getCell(x - 1, y - 1).setTile(tiles.getTile(PLAIN));
-			ground.getCell(x, y - 1).setTile(tiles.getTile(PLAIN));
-			ground.getCell(x + 1, y - 1).setTile(tiles.getTile(PLAIN));
-			ground.getCell(x - 1, y - 2).setTile(tiles.getTile(PLAIN));
-			ground.getCell(x, y - 2).setTile(tiles.getTile(PLAIN));
-			ground.getCell(x + 1, y - 2).setTile(tiles.getTile(PLAIN));
+			objects.setCell(x - 1, y + 2, TL);
+			objects.setCell(x, y + 2, TM);
+			objects.setCell(x + 1, y + 2, TR);
+			objects.setCell(x - 1, y + 1, BL);
+			objects.setCell(x, y + 1, BM);
+			objects.setCell(x + 1, y + 1, BR);
+			ground.getCell(x - 1, y + 2).setTile(tiles.getTile(PLAIN));
+			ground.getCell(x, y + 2).setTile(tiles.getTile(PLAIN));
+			ground.getCell(x + 1, y + 2).setTile(tiles.getTile(PLAIN));
+			ground.getCell(x - 1, y + 1).setTile(tiles.getTile(PLAIN));
+			ground.getCell(x, y + 1).setTile(tiles.getTile(PLAIN));
+			ground.getCell(x + 1, y + 1).setTile(tiles.getTile(PLAIN));
 			return true;
 		} else {
 			return false;
