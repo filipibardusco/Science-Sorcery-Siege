@@ -1,7 +1,5 @@
 package com.mygdx.game;
 
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.ApplicationAdapter;
@@ -13,18 +11,13 @@ import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
-import com.badlogic.gdx.maps.tiled.TiledMap;
 import com.badlogic.gdx.maps.tiled.TiledMapRenderer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
-import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
-import com.badlogic.gdx.math.Vector2;
 
 public class ScienceSorcerySiege extends ApplicationAdapter implements InputProcessor {
 	SpriteBatch batch;
-	int screenX;
-	int screenY;
+	float w;
+	float h;
 	Field map;
 	OrthographicCamera camera;
 	TiledMapRenderer tiledMapRenderer;
@@ -40,8 +33,8 @@ public class ScienceSorcerySiege extends ApplicationAdapter implements InputProc
 	public void create () {
 		batch = new SpriteBatch();
 		//setting variables for easy access to screen dimensions
-		float w = Gdx.graphics.getWidth();
-        float h = Gdx.graphics.getHeight();
+		w = Gdx.graphics.getWidth();
+        h = Gdx.graphics.getHeight();
         camera = new OrthographicCamera();
         camera.zoom -= 0.7;
         camera.setToOrtho(false,w,h);
@@ -49,19 +42,34 @@ public class ScienceSorcerySiege extends ApplicationAdapter implements InputProc
         
         
         
-        map = new Field(20);
+        map = new Field(40);
         tiledMapRenderer = new OrthogonalTiledMapRenderer(map.map);
 		
 		Texture playerTex = new Texture("badlogic.jpg");
-		player = new Player(new Sprite(playerTex), map.ground);
+		player = new Player(new Sprite(playerTex), camera);
 		fillUpgrades();
 		
 	}
 
 	@Override
 	public void render () {
-
+		if(!player.baseDown) {
+			player.setBase(map, camera);
+		}
+		//System.out.println(camera.position.x + " " + camera.position.y);
 		player.update(Gdx.graphics.getRawDeltaTime(), camera);
+		if(player.getX() - camera.position.x > w * camera.zoom - 170  && camera.position.x + w * camera.zoom / 2 < Field.ground.getWidth() * Field.ground.getTileWidth()) { //Scrolling when at right side of the screen
+			camera.translate(70 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
+			
+		} else if(player.getX() - camera.position.x < -1 * w * camera.zoom + 170 && camera.position.x > w * camera.zoom / 2) { //Scrolling when at left
+			camera.translate(-70 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
+			
+		}
+		if(player.getY() - camera.position.y > h * camera.zoom - 130  && camera.position.y + h * camera.zoom / 2 < Field.ground.getHeight() * Field.ground.getTileHeight()) { //Scrolling when at right side of the screen
+			camera.translate(0, 70 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
+		} else if(player.getY() - camera.position.y < -1 * h * camera.zoom + 130 && camera.position.y > h * camera.zoom / 2) { //Scrolling when at left
+			camera.translate(0, -70 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
+		}
 		//Drawing all objects
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
@@ -69,10 +77,10 @@ public class ScienceSorcerySiege extends ApplicationAdapter implements InputProc
 		camera.update();
         tiledMapRenderer.setView(camera);
         tiledMapRenderer.render();
-        
+        batch.setProjectionMatrix(camera.combined);
         
         batch.begin();
-        player.draw(batch);
+        player.draw(batch, camera);
 		batch.end();
 	}
 
