@@ -59,16 +59,16 @@ public class ScienceSorcerySiege extends ApplicationAdapter implements InputProc
 		//System.out.println(camera.position.x + " " + camera.position.y);
 		player.update(Gdx.graphics.getRawDeltaTime(), camera);
 		if(player.getX() - camera.position.x > w * camera.zoom - 170  && camera.position.x + w * camera.zoom / 2 < Field.ground.getWidth() * Field.ground.getTileWidth()) { //Scrolling when at right side of the screen
-			camera.translate(70 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
+			camera.translate(80 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
 			
 		} else if(player.getX() - camera.position.x < -1 * w * camera.zoom + 170 && camera.position.x > w * camera.zoom / 2) { //Scrolling when at left
-			camera.translate(-70 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
+			camera.translate(-80 * Gdx.graphics.getRawDeltaTime() * player.moveMod(), 0);
 			
 		}
 		if(player.getY() - camera.position.y > h * camera.zoom - 130  && camera.position.y + h * camera.zoom / 2 < Field.ground.getHeight() * Field.ground.getTileHeight()) { //Scrolling when at right side of the screen
-			camera.translate(0, 70 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
+			camera.translate(0, 80 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
 		} else if(player.getY() - camera.position.y < -1 * h * camera.zoom + 130 && camera.position.y > h * camera.zoom / 2) { //Scrolling when at left
-			camera.translate(0, -70 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
+			camera.translate(0, -80 * Gdx.graphics.getRawDeltaTime() * player.moveMod());
 		}
 		//Drawing all objects
 		Gdx.gl.glClearColor(0, 0, 0, 1);

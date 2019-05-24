@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.2.3" name="Field" tilewidth="32" tileheight="32" tilecount="11" columns="0">
+<tileset version="1.2" tiledversion="1.2.3" name="Field" tilewidth="32" tileheight="32" tilecount="12" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="1">
   <properties>
@@ -77,5 +77,12 @@
    <property name="blocked" type="bool" value="true"/>
   </properties>
   <image width="32" height="32" source="WaterTile-3.png.png"/>
+ </tile>
+ <tile id="15">
+  <properties>
+   <property name="TerrainType" value="air"/>
+   <property name="blocked" type="bool" value="false"/>
+  </properties>
+  <image width="32" height="32" source="AirObject-1.png.png"/>
  </tile>
 </tileset>

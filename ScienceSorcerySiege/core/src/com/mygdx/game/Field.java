@@ -18,6 +18,7 @@ public class Field{
 	public int size;
 	public static TiledMapTileLayer ground;
 	public static TiledMapTileLayer objects;
+	public static MapLayers layers;
 	//Don't ask me why these IDs are all one higher than they are in the Field.tsx file, I really don't know but they are
 	private static final int FOREST = 2;
 	private static final int PLAIN = 3;
@@ -30,6 +31,7 @@ public class Field{
 	private static final int WATER1 = 13;
 	private static final int WATER2 = 14;
 	private static final int WATER3 = 15;
+	private static final int AIR = 16;
 	
 	TiledMap importTiles = new TmxMapLoader().load("MapTemplate.tmx");
 	TiledMapTileSet tiles = importTiles.getTileSets().getTileSet(0);
@@ -37,7 +39,7 @@ public class Field{
 	public Field(int size) {
 		this.size = size;
 		map = new TiledMap();
-		MapLayers layers = map.getLayers();
+		layers = map.getLayers();
 		
 		
 		
@@ -89,9 +91,14 @@ public class Field{
 				ground.setCell(y, x, cellReflect);
 			}
 		}
+		for(int x = 0; x < size; x++) {
+			for(int y = 0; y < size; y++) {
+				objects.setCell(x, y, new Cell().setTile(tiles.getTile(AIR)));
+			}
+		}
 		layers.add(ground);
 		layers.add(objects);
-	
+		
 		
 	}
 	

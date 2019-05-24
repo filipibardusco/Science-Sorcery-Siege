@@ -23,7 +23,7 @@ public class Player extends Sprite implements InputProcessor {
     /** the movement velocity */
     private Vector2 velocity = new Vector2();
 
-    private float speed = 70;
+    private float speed = 80;
 
     
     private LinkedList<String> upgrades = new LinkedList<String>();
@@ -92,7 +92,7 @@ public class Player extends Sprite implements InputProcessor {
         if(Gdx.input.isKeyPressed(Keys.S)){
             velocity.y = -speed;
         } 
-        System.out.println(getY() + getHeight());
+        
         if(getY() + getHeight() <= Field.ground.getHeight() * Field.ground.getTileHeight() && getY() >= 0) {
         	translateY(velocity.y * delta * moveSpeedMod);
         }
@@ -105,72 +105,78 @@ public class Player extends Sprite implements InputProcessor {
         
         
         
-        
-        
-        if(velocity.x < 0) { // going left
-            // top left
-            collisionX = (Boolean) Field.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+        collisionX = collisionY = false;
+        for(MapLayer l : Field.layers) {
+        	TiledMapTileLayer layer = (TiledMapTileLayer) l;
+        	if(velocity.x < 0) { // going left
+                // top left
+                if(!collisionX) {
+                	collisionX = (Boolean) layer.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+                }
 
-            // middle left
-            if(!collisionX)
-                collisionX = (Boolean) Field.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("blocked");
+                // middle left
+                if(!collisionX)
+                    collisionX = (Boolean) layer.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("blocked");
 
-            // bottom left
-            if(!collisionX)
-                collisionX = (Boolean) Field.ground.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
-        } else if(velocity.x > 0) { // going right
-            // top right
-            collisionX = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+                // bottom left
+                if(!collisionX)
+                    collisionX = (Boolean) layer.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+            } else if(velocity.x > 0) { // going right
+                // top right
+                if(!collisionX) {
+                	collisionX = (Boolean) layer.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+                }
 
-            // middle right
-            if(!collisionX)
-                collisionX = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("blocked");
+                // middle right
+                if(!collisionX)
+                    collisionX = (Boolean) layer.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("blocked");
 
-            // bottom right
-            if(!collisionX)
-                collisionX = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+                // bottom right
+                if(!collisionX)
+                    collisionX = (Boolean) layer.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+            }
+            
+
+            // react to x collision
+            if(collisionX) {
+                setX(oldX);
+            } 
+
+            if(velocity.y < 0) { // going down
+                // bottom left
+                if(!collisionY) {
+                	collisionY = (Boolean) layer.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+                }
+
+                // bottom middle
+                if(!collisionY)
+                    collisionY = (Boolean) layer.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+
+                // bottom right
+                if(!collisionY)
+                    collisionY = (Boolean) layer.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
+
+            } else if(velocity.y > 0) { // going up
+                // top left
+                if(!collisionY) {
+                	collisionY = (Boolean) layer.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+                }
+
+                // top middle
+                if(!collisionY)
+                    collisionY = (Boolean) layer.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+
+                // top right
+                if(!collisionY)
+                    collisionY = (Boolean) layer.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
+            }
+            
+
+            // react to y collision
+            if(collisionY) {
+                setY(oldY);
+            }
         }
-
-        // react to x collision
-        if(collisionX) {
-            setX(oldX);
-            //velocity.x = 0;
-        } 
-
-        if(velocity.y < 0) { // going down
-            // bottom left
-            collisionY = (Boolean) Field.ground.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
-
-            // bottom middle
-            if(!collisionY)
-                collisionY = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
-
-            // bottom right
-            if(!collisionY)
-                collisionY = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("blocked");
-
-        } else if(velocity.y > 0) { // going up
-            // top left
-            collisionY = (Boolean) Field.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
-
-            // top middle
-            if(!collisionY)
-                collisionY = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
-
-            // top right
-            if(!collisionY)
-                collisionY = (Boolean) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("blocked");
-        }
-        
-
-        // react to y collision
-        if(collisionY) {
-            setY(oldY);
-            //velocity.y = 0;
-        }
-        
-        
-        
         
         
         velocity.x = 0;
