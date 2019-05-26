@@ -13,12 +13,11 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
 import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 
-public class Field{
-	public TiledMap map;
+public class Field extends TiledMap{
 	public int size;
-	public static TiledMapTileLayer ground;
-	public static TiledMapTileLayer objects;
-	public static MapLayers layers;
+	public TiledMapTileLayer ground;
+	public TiledMapTileLayer objects;
+	public MapLayers layers;
 	//Don't ask me why these IDs are all one higher than they are in the Field.tsx file, I really don't know but they are
 	private static final int FOREST = 2;
 	private static final int PLAIN = 3;
@@ -26,7 +25,7 @@ public class Field{
 	private static final int BASETM = 7;
 	private static final int BASETR = 8;
 	private static final int BASEBL = 9;
-	private static final int BASEBM = 10;
+	private static final int BASEENTRANCE = 10;
 	private static final int BASEBR = 11;
 	private static final int WATER1 = 13;
 	private static final int WATER2 = 14;
@@ -37,9 +36,9 @@ public class Field{
 	TiledMapTileSet tiles = importTiles.getTileSets().getTileSet(0);
 	
 	public Field(int size) {
-		this.size = size;
-		map = new TiledMap();
-		layers = map.getLayers();
+		//Constructor for a game map, randomly generates tiles
+		this.size = size; //The width and height, in tiles, of the map
+		layers = getLayers();
 		
 		
 		
@@ -63,7 +62,7 @@ public class Field{
 			ground.setCell(0, i, cellLeft);
 			ground.setCell(size - 1, i, cellRight);
 		}
-		for (int x = 1; x < size - 1; x++) {
+		for (int x = 1; x < size - 1; x++) { //Setting random tiles across the map with a line of symmetry across a diagonal
 			for (int y = x; y < size - 1; y++) {
 				int tileDeterminer = randint(1, 100); //Using a random integer to determine a random tile
 				int lakeMod = 0;
@@ -74,6 +73,7 @@ public class Field{
 				if(ground.getCell(x - 1, y).getTile().getId() == FOREST || ground.getCell(x, y - 1).getTile().getId() == FOREST) { //Making it more likely to create forest tiles next to other forest tiles to simulate more realistic forest structures
 					forestMod += 8;
 				}
+				//Laying down the appropriate cells in the layer
 				Cell cell = new Cell();
 				Cell cellReflect = new Cell();
 				if(tileDeterminer <= 6 + lakeMod) {
@@ -115,7 +115,7 @@ public class Field{
 			TM.setTile(tiles.getTile(BASETM));
 			TL.setTile(tiles.getTile(BASETL));
 			BR.setTile(tiles.getTile(BASEBR));
-			BM.setTile(tiles.getTile(BASEBM));
+			BM.setTile(tiles.getTile(BASEENTRANCE));
 			BL.setTile(tiles.getTile(BASEBL));
 			objects.setCell(x - 1, y + 2, TL);
 			objects.setCell(x, y + 2, TM);
@@ -142,6 +142,7 @@ public class Field{
 	}
 	
 	public int rowAt(int y) {
+		//Returns the tile row position at pixel value y
 		int row = (int) (y / ground.getTileWidth());
 		return row;
 	}
