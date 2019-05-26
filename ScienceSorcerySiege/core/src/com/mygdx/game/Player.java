@@ -1,3 +1,5 @@
+//This class is inherits from the sprite class and is specifically designed for player controlled characters
+//It takes input from the user and handles all interactions the player has with the rest of the game and stores the player's upgrades and items that they've collected
 package com.mygdx.game;
 
 import java.util.HashSet;
@@ -10,6 +12,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.InputProcessor;
 import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Sprite;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.maps.MapLayer;
@@ -18,95 +21,73 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.math.Vector3;
 
-public class Player extends Sprite implements InputProcessor {
+public class Player extends Sprite{
 
     /** the movement velocity */
-    private Vector2 velocity = new Vector2();
+    private Vector2 velocity = new Vector2(); //The current velocity of the player
 
-    private float speed = 80;
+    private float defSpeed = 60; //The default movement speed value for a player provided no effects are on them, but can change with upgrades
 
     
-    private LinkedList<String> upgrades = new LinkedList<String>();
+    private LinkedList<Upgrade> upgrades = new LinkedList<Upgrade>(); //Stores the player's current upgrades
     
     private HashSet<String> tilesOn = new HashSet<String>(); //The tiles that the player is currently standing on
     
-    public boolean baseDown = false;
+    public boolean baseDown = false; //Flag storing whether or not this player has placed a base
+    private int[] basePos;
 
-    public Player(Sprite sprite, OrthographicCamera camera) {
+    public Player(Sprite sprite) {
+    	//Constructor is identical to the Sprite constructor, but sets it to the appropriate size for a player and some initiation
         super(sprite);
         setSize(16, 16);
-        
-    }
-    public void draw(SpriteBatch spriteBatch, OrthographicCamera camera) {
-        //update(Gdx.graphics.getDeltaTime());
-
-        super.draw(spriteBatch);
-        
+        basePos = new int[2];
     }
 
-    public void update(float delta, OrthographicCamera camera) {
-        float moveSpeedMod = 1;
+    public void update(float delta, OrthographicCamera camera, Field map) {
+    	//Updates the player's position and handles interactions with the map
+        float moveSpeedMod = 1; //Modifier for movement speed based on tile positioning
     	tilesOn.clear();
-    	//System.out.println(getX() + "/" + getY());
-    	//System.out.println(camera.unproject(new Vector3(getX(), getY(), 0)).x + " " + camera.unproject(new Vector3(getX(), getY(), 0)).y);
-    	
-    	
+
         // save old position
-        float oldX = getX(), oldY = getY(), tileWidth = Field.ground.getTileWidth(), tileHeight = Field.ground.getTileHeight();
-        boolean collisionX = false, collisionY = false;
-       
-        tilesOn.add((String) Field.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
-        tilesOn.add((String) Field.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
+        float oldX = getX(), oldY = getY(), tileWidth = map.ground.getTileWidth(), tileHeight = map.ground.getTileHeight();
+        boolean collisionX = false, collisionY = false; //flags for determining collisions
+        
+        //Determining all tile types the player is currently standing on
+        tilesOn.add((String) map.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) ((getX()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) ((getX()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) ((getY() + getHeight() / 2) / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) (((getX()) + getWidth()) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) (getY() / tileHeight)).getTile().getProperties().get("TerrainType"));
+        tilesOn.add((String) map.ground.getCell((int) (((getX()) + getWidth() / 2) / tileWidth), (int) ((getY() + getHeight()) / tileHeight)).getTile().getProperties().get("TerrainType"));
         
         
         // move on x
         
-        moveSpeedMod = moveMod();
+        moveSpeedMod = moveMod(); //Determining what move speed modifiers should be applied based on terrain
         
-        if(Gdx.input.isKeyPressed(Keys.D)){
-            velocity.x = speed;
-        } 
-        if(Gdx.input.isKeyPressed(Keys.A)){
-            velocity.x = -speed;
-        } 
+        kbInput(map, camera); //Gets input to determine which direction to head and other things
         
-        if(getX() + getWidth() <= Field.ground.getWidth() * Field.ground.getTileWidth() && getX() >= 0) {
+        if(getX() + getWidth() <= map.ground.getWidth() * map.ground.getTileWidth() && getX() >= 0) {
+        	//Moves the player horizontally provided they are not at the edges of the map
         	translateX(velocity.x * delta * moveSpeedMod);
         }
-        if(getX() < 0) {
-        	setX(oldX);
+        if(getX() < 0 || getX() + getWidth() > map.ground.getWidth() * map.ground.getTileWidth()) { 
+        	//Applies collisions at edges of the screen
+        	collisionX = true;
         }
-        if(getX() + getWidth() > Field.ground.getWidth() * Field.ground.getTileWidth()) {
-        	setX(oldX);
-        }
-        
-        if(Gdx.input.isKeyPressed(Keys.W)){
-            velocity.y = speed;
-        } 
-        if(Gdx.input.isKeyPressed(Keys.S)){
-            velocity.y = -speed;
-        } 
-        
-        if(getY() + getHeight() <= Field.ground.getHeight() * Field.ground.getTileHeight() && getY() >= 0) {
+        if(getY() + getHeight() <= map.ground.getHeight() * map.ground.getTileHeight() && getY() >= 0) {
+        	//Moves the player vertically provided they are not at the edges of the map
         	translateY(velocity.y * delta * moveSpeedMod);
         }
-        if(getY() < 0) {
-        	setY(0);
-        }
-        if(getY() + getHeight() > Field.ground.getHeight() * Field.ground.getTileHeight()) {
-        	setY(oldY);
+        if(getY() < 0 || getY() + getHeight() > map.ground.getHeight() * map.ground.getTileHeight()) {
+        	//Applies collisions at edges of the screen
+        	collisionY = true;
         }
         
-        
-        
-        collisionX = collisionY = false;
-        for(MapLayer l : Field.layers) {
+        for(MapLayer l : map.layers) {
+        	//Checking and reacting to collisions across all map layers
         	TiledMapTileLayer layer = (TiledMapTileLayer) l;
         	if(velocity.x < 0) { // going left
                 // top left
@@ -178,38 +159,47 @@ public class Player extends Sprite implements InputProcessor {
             }
         }
         
-        
+        //Stopping the player for when there is no input
         velocity.x = 0;
         velocity.y = 0;
         
     }
     
     public float moveMod() {
-    	float moveSpeedMod = 1;
-    	if(tilesOn.contains("forest")) {
+    	//Adjusts the movement speed of the player based on the tiles it is on
+    	float movedefSpeedMod = 1;
+    	if(tilesOn.contains("forest")) { //Reduces move speed if in a forest, unless they have the appropriate upgrade
         	if(upgrades.contains("Arboreal Essence")) {
-        		moveSpeedMod *= 1.5;
+        		movedefSpeedMod *= 1.5;
         	} else {
-        		moveSpeedMod /= 2;
+        		movedefSpeedMod /= 2;
         	}
         	
         }
-    	return moveSpeedMod;
+    	return movedefSpeedMod;
     }
     
-    public int[] tilePos(OrthographicCamera camera) {
+    public int[] tilePos(Field map) {
     	//Returns the tile that the bottom left corner of the player sprite is on 
     	int[] tilePos = new int[2];
-    	tilePos[0] = (int) ((getX()) / ((TiledMapTileLayer) Field.ground).getTileWidth());
-    	tilePos[1] = (int) ((getY()) / ((TiledMapTileLayer) Field.ground).getTileHeight());
+    	tilePos[0] = (int) ((getX()) / map.ground.getTileWidth());
+    	tilePos[1] = (int) ((getY()) / map.ground.getTileHeight());
     	return tilePos;
     }
     
     public void setBase(Field map, OrthographicCamera camera) {
-    	if(Gdx.input.isKeyPressed(Keys.SPACE)) {
-    		if(map.setBase(tilePos(camera)[0], tilePos(camera)[1])) {
-        		baseDown = true;
-        	}
+    	//Sets the player's base directly above them
+    	if(map.setBase(tilePos(map)[0], tilePos(map)[1])) {
+        	baseDown = true; //Confirms that the base was successfully placed
+        	basePos[0] = tilePos(map)[0];
+        	basePos[1] = tilePos(map)[1] + 1;
+        }
+    }
+    
+    public void setTexture() {
+    	//Sets the texture of the player character to the appropriate one based on the most recent upgrade path
+    	if(upgrades.size() <= 2) {
+    		setTexture(new Texture(upgrades.getLast().name + "Avatar.png"));
     	}
     }
 
@@ -221,104 +211,43 @@ public class Player extends Sprite implements InputProcessor {
         this.velocity = velocity;
     }
 
-    public float getSpeed() {
-        return speed;
+    public float getdefSpeed() {
+        return defSpeed;
     }
 
-    public void setSpeed(float speed) {
-        this.speed = speed;
-    }
-
-    
-    public Upgrade[] displayUpgrade(LinkedList<Upgrade> path) {
-    	Upgrade[] choices = new Upgrade[2];
-    	if(upgrades.isEmpty()) {
-    		Upgrade option1 = new Upgrade("Science", "Gives a splash damage projectile attacks");
-    		Upgrade option2 = new Upgrade("Magic", "Gives a close quarters combat attack");
-    		choices[0] = option1;
-    		choices[1] = option2;
-    	} else if(upgrades.getLast().equals("Science")) {
-    		Upgrade option1 = new Upgrade("Military", "Allows the purchase of placeable turrets");
-    		Upgrade option2 = new Upgrade("Alchemy", "Allows the purchase of health potions");
-    		choices[0] = option1;
-    		choices[1] = option2;
-    	} else if(upgrades.getLast().equals("Sorcery")) {
-    		Upgrade option1 = new Upgrade("Natural Magic", "Allows the purchase of natural draining totems");
-    		Upgrade option2 = new Upgrade("Dark Arts", "Allows the purchase of stat upgrades");
-    		choices[0] = option1;
-    		choices[1] = option2;
-    	} else {
-    		Upgrade[] onlyChoice = new Upgrade[1];
-    		onlyChoice[0] = path.get(path.indexOf(upgrades.getLast()) + 1);
-    		return onlyChoice;
-    	}
-    	return choices;
+    public void setdefSpeed(float defSpeed) {
+        this.defSpeed = defSpeed;
     }
     
-    
+    public void kbInput(Field map, OrthographicCamera camera) {
+    	//Gets player related keyboard input
+    	
+    	//Movement speed calculations
+    	if(Gdx.input.isKeyPressed(Keys.D)){
+            velocity.x = defSpeed;
+        } 
+        if(Gdx.input.isKeyPressed(Keys.A)){
+            velocity.x = -defSpeed;
+        } 
+        if(Gdx.input.isKeyPressed(Keys.W)){
+            velocity.y = defSpeed;
+        } 
+        if(Gdx.input.isKeyPressed(Keys.S)){
+            velocity.y = -defSpeed;
+        } 
+        if(Gdx.input.isKeyPressed(Keys.SPACE)) {
+        	//Places down base if not done, otherwise attempts to enter the upgrade/shop menu, provided the player is in their base
+        	if(baseDown) {
+        		if(tilePos(map)[0] == basePos[0] && tilePos(map)[1] == basePos[1]) {
+        			System.out.println("Yay safe!");
+        		}
+        	} else {
+        		setBase(map, camera);
+        	}
+        }
+    }
     
     public void upgrade(Upgrade u) {
-    	upgrades.add(u.name);
+    	upgrades.add(u);
     }
-
-    @Override
-    public boolean keyDown(int keycode) {
-        switch(keycode) {
-            case Keys.A:
-                velocity.x = -speed;
-                break;
-            case Keys.D:
-                velocity.x = speed;
-            case Keys.S:
-                velocity.y = -speed;
-                break;
-            case Keys.W:
-                velocity.y = speed;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean keyUp(int keycode) {
-        switch(keycode) {
-            case Keys.A:
-            case Keys.D:
-                velocity.x = 0;
-            case Keys.S:
-            case Keys.W:
-                velocity.y = 0;
-        }
-        return true;
-    }
-
-    @Override
-    public boolean keyTyped(char character) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDown(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        return false;
-    }
-
-    @Override
-    public boolean touchDragged(int screenX, int screenY, int pointer) {
-        return false;
-    }
-
-    @Override
-    public boolean mouseMoved(int screenX, int screenY) {
-        return false;
-    }
-
-    @Override
-    public boolean scrolled(int amount) {
-        return false;
-    }
-
 }
