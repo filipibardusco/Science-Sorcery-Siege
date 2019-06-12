@@ -93,6 +93,34 @@ public class Field extends TiledMap{
 		layers.add(objects);
 	}
 	
+	public Field(String grid, int size) {
+		this.size = size; //The width and height, in tiles, of the map
+		layers = getLayers();
+		ground = new TiledMapTileLayer(size, size, 32, 32);
+		objects = new TiledMapTileLayer(size, size, 32, 32);
+		for(int x = 0; x < size; x++) {
+			for(int y = 0; y < size; y++) {
+				Cell groundCell = new Cell();
+				Cell objectCell = new Cell();
+				Character c = grid.charAt(x + y * (size + 2));
+				if(c.equals('p')) {
+					groundCell.setTile(tiles.getTile(PLAIN));
+				} else if(c.equals('f')) {
+					groundCell.setTile(tiles.getTile(FOREST));
+				} else {
+					groundCell.setTile(tiles.getTile(WATER1));
+				}
+				objectCell.setTile(tiles.getTile(AIR));
+				ground.setCell(x, y, groundCell);
+				objects.setCell(x, y, objectCell);
+			}
+		}
+		
+		
+		layers.add(ground);
+		layers.add(objects);
+	}
+	
 	public boolean setBase(int x, int y) {
 		//Sets the player's base at Tile position (x, y) and returns whether it was successful or not
 		if(x > 0 && x < size && y < size - 1) { //Checks to see if the base would fit in the map
@@ -158,17 +186,18 @@ public class Field extends TiledMap{
 		}
 		return validPos;
 	}
+	
 	@Override
 	public String toString() {
 		String grid = "";
-		for(int y = 0; y < size; y++) {
-			for(int x = 0; x < size; x++) {
-				if(ground.getCell(x, y).getTile().getId() == WATER1) {
-					grid += "w";
+		for(int x = 0; x < size; x++) {
+			for(int y = 0; y < size; y++) {
+				if(ground.getCell(x, y).getTile().getId() == PLAIN) {
+					grid += "p";
 				} else if(ground.getCell(x, y).getTile().getId() == FOREST) {
 					grid += "f";
 				} else {
-					grid += "p";
+					grid += "w";
 				}
 			}
 			grid += "\n";
