@@ -62,7 +62,7 @@ class clientProcessor extends Thread{
                     this.enemy = communicate.take();
 
                 } else {
-                    communicate = new LinkedBlockingQueue<>();
+                    communicate = new LinkedBlockingQueue<String>();
                     communicate.add(message[1]);
                     players.add(communicate);
                     out.write("Waiting for players");

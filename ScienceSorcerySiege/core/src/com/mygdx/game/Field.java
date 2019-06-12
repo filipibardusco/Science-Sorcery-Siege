@@ -1,49 +1,42 @@
-//This class stores and randomly generates the game map
+//This class stores and randomly generates the game map as well as modifies it as necessary
 
 package com.mygdx.game;
 
-import com.badlogic.gdx.graphics.Texture;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.maps.MapLayers;
 import com.badlogic.gdx.maps.tiled.TiledMap;
-import com.badlogic.gdx.maps.tiled.TiledMapTile;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.TiledMapTileLayer.Cell;
 import com.badlogic.gdx.maps.tiled.TiledMapTileSet;
 import com.badlogic.gdx.maps.tiled.TmxMapLoader;
-import com.badlogic.gdx.maps.tiled.tiles.StaticTiledMapTile;
 
 public class Field extends TiledMap{
-	public int size;
+	public int size; //The width and height in tiles of the map
 	public TiledMapTileLayer ground;
-	public TiledMapTileLayer objects;
+	public TiledMapTileLayer objects; //The layer in which objects such as placeables and bases are stored
 	public MapLayers layers;
 	//Don't ask me why these IDs are all one higher than they are in the Field.tsx file, I really don't know but they are
-	private static final int FOREST = 2;
-	private static final int PLAIN = 3;
+	public static final int FOREST = 2;
+	public static final int PLAIN = 3;
 	private static final int BASETL = 12;
 	private static final int BASETM = 7;
 	private static final int BASETR = 8;
 	private static final int BASEBL = 9;
 	private static final int BASEENTRANCE = 10;
 	private static final int BASEBR = 11;
-	private static final int WATER1 = 13;
-	private static final int WATER2 = 14;
-	private static final int WATER3 = 15;
-	private static final int AIR = 16;
+	public static final int WATER1 = 13;
+	public static final int AIR = 16; //Generic clear tile used to facilitate collisions with other objects
+	public static final int RUNE = 17;
+	public static final int TOTEM = 18;
+	public static final int WALL = 19;
+	public static final int RUNEEFFECTS = 20;
 	
 	TiledMap importTiles = new TmxMapLoader().load("MapTemplate.tmx");
-	TiledMapTileSet tiles = importTiles.getTileSets().getTileSet(0);
+	public TiledMapTileSet tiles = importTiles.getTileSets().getTileSet(0); //The available tiles that the map builds with
 	
 	public Field(int size) {
 		//Constructor for a game map, randomly generates tiles
 		this.size = size; //The width and height, in tiles, of the map
 		layers = getLayers();
-		
-		
-		
-		
-		
 		ground = new TiledMapTileLayer(size, size, 32, 32);
 		objects = new TiledMapTileLayer(size, size, 32, 32);
 		
@@ -75,17 +68,17 @@ public class Field extends TiledMap{
 				}
 				//Laying down the appropriate cells in the layer
 				Cell cell = new Cell();
-				Cell cellReflect = new Cell();
+				Cell cellReflect = new Cell(); //The cell to be laid on the opposite end of the map to create symmetry
+				int tileType;
 				if(tileDeterminer <= 6 + lakeMod) {
-					cell.setTile(tiles.getTile(WATER1));
-					cellReflect.setTile(tiles.getTile(WATER1));
+					tileType = WATER1;
 				} else if(tileDeterminer <= 30 + forestMod) {
-					cell.setTile(tiles.getTile(FOREST));
-					cellReflect.setTile(tiles.getTile(FOREST));
+					tileType = FOREST;
 				} else {
-					cell.setTile(tiles.getTile(PLAIN));
-					cellReflect.setTile(tiles.getTile(PLAIN));
+					tileType = PLAIN;
 				}
+				cell.setTile(tiles.getTile(tileType));
+				cellReflect.setTile(tiles.getTile(tileType));
 				
 				ground.setCell(x, y, cell);
 				ground.setCell(y, x, cellReflect);
@@ -93,18 +86,16 @@ public class Field extends TiledMap{
 		}
 		for(int x = 0; x < size; x++) {
 			for(int y = 0; y < size; y++) {
-				objects.setCell(x, y, new Cell().setTile(tiles.getTile(AIR)));
+				objects.setCell(x, y, new Cell().setTile(tiles.getTile(AIR))); //Setting all empty object tiles to be air initially
 			}
 		}
 		layers.add(ground);
 		layers.add(objects);
-		
-		
 	}
 	
 	public boolean setBase(int x, int y) {
 		//Sets the player's base at Tile position (x, y) and returns whether it was successful or not
-		if(x > 0 && x < size && y < size - 1) {
+		if(x > 0 && x < size && y < size - 1) { //Checks to see if the base would fit in the map
 			Cell TR = new Cell();
 			Cell TM = new Cell();
 			Cell TL = new Cell();
@@ -147,7 +138,43 @@ public class Field extends TiledMap{
 		return row;
 	}
 	
+	public void setAir(int x, int y) {
+		//Sets a specific tile to be an air tile
+		Cell air = new Cell();
+		air.setTile(tiles.getTile(AIR));
+		objects.setCell(x, y, air);
+	}
 	
+	public boolean setPlaceable(int x, int y, int type) {
+		//sets a placeable item
+		boolean validPos = false;
+		if(x >= 0 && x < size && y >= 0 && y < size) {
+			if(objects.getCell(x, y).getTile().getId() == AIR) {
+				Cell tot = new Cell();
+				tot.setTile(tiles.getTile(type));
+				objects.setCell(x, y, tot);
+				validPos = true;
+			}
+		}
+		return validPos;
+	}
+	@Override
+	public String toString() {
+		String grid = "";
+		for(int y = 0; y < size; y++) {
+			for(int x = 0; x < size; x++) {
+				if(ground.getCell(x, y).getTile().getId() == WATER1) {
+					grid += "w";
+				} else if(ground.getCell(x, y).getTile().getId() == FOREST) {
+					grid += "f";
+				} else {
+					grid += "p";
+				}
+			}
+			grid += "\n";
+		}
+		return grid;
+	}
 	
 	public static int randint(int low, int high){
 	    return (int)(Math.random()*(high-low+1) + low);
