@@ -11,9 +11,8 @@ public class Enemy extends Sprite{
 	private int health; //The amount of health an enemy has
 	private int attackPower; //Determines how much damage an enemy deals to a player
 	private int level; //The level f difficulty of this enemy, scales over time
-	private Vector2 moveDir; //The random direction the enemy goes in for a period of time
-	private Vector2 velocity; //The current velocity of the enemy's movement
-	private float lastTimeChange; //The time in seconds that the enemy performed it's last change in direction
+	private Vector2 velocity; //The random direction the enemy goes in for a period of time
+	//private float lastTimeChange; //The time in seconds that the enemy performed it's last change in direction
 	
 	private static final int DEFMOVESPEED = 10; //The default movement speed of an enemy
 	private static final int RADIUS = 120; //The radius of proximity of the enemy to other players
@@ -29,19 +28,17 @@ public class Enemy extends Sprite{
 		velocity = new Vector2();
 	}
 	
-	public Vector2 moveDir(float totalTime) {
+	/*public Vector2 moveDir(float totalTime) {
 		//Determines the temporary randomized movement direction for this enemy over a certain time period
 		if(lastTimeChange + 0.5 < totalTime || moveDir == null) {
 			moveDir = new Vector2(randint(-2, 1), randint(-2, 1));
 			lastTimeChange = totalTime;
 		}
-		velocity.x = moveDir.x;
-		velocity.y = moveDir.y;
 		return moveDir;
-	}
+	}*/
 	
 	public void move(float delta, Field map) {
-		//Moves the enemy in the appropriate direction in the same way playersare moved
+		//Moves the enemy in the appropriate direction in the same way players are moved
 		float oldX = getX(), oldY = getY(), tileWidth = map.ground.getTileWidth(), tileHeight = map.ground.getTileHeight();
         boolean collisionX = false, collisionY = false; //flags for determining collisions
 		if(getX() + getWidth() <= map.ground.getWidth() * map.ground.getTileWidth() && getX() >= 0) {

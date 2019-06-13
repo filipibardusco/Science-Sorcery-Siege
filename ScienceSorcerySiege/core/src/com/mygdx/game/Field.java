@@ -28,6 +28,7 @@ public class Field extends TiledMap{
 	public static final int RUNE = 17;
 	public static final int TOTEM = 18;
 	public static final int WALL = 19;
+	public static final int BEACON = 23;
 	public static final int RUNEEFFECTS = 20;
 	
 	TiledMap importTiles = new TmxMapLoader().load("MapTemplate.tmx");

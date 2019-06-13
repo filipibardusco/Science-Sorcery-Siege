@@ -49,6 +49,7 @@ public class Player extends Sprite{
     private int baseHealth; //The amount of damage the player's base can sustain
     private float respawnTimer; //How long the opponent has left until they respawn after dying
     private int deathCount; //The amount of times the player has died
+    private boolean nearBeacon;
     
     public String gameState; //The current state of the game for this player
 
@@ -67,7 +68,7 @@ public class Player extends Sprite{
         inventory.put("Totem", 0);
         inventory.put("Rune", 0);
         inventory.put("Wall", 0);
-        inventory.put("Alchemy", 0);
+        inventory.put("Beacon", 0);
         invincibility = 0;
         placeables = new ArrayList<Placeable>();
         shop = new Shop();
@@ -204,6 +205,8 @@ public class Player extends Sprite{
         if(invincibility > 0) {
         	invincibility -= delta;
         }
+        resetBeacon();
+        
     }
     
     public float moveMod(Field map) {
@@ -218,6 +221,9 @@ public class Player extends Sprite{
         }
     	if(tilePos(map)[0] == basePos[0] && tilePos(map)[1] == basePos[1]) { //Increases movement speed dramatically in base primarily so the camera will follow much faster upon respawn
     		movedefSpeedMod *= 3;
+    	}
+    	if(nearBeacon) {
+    		movedefSpeedMod /= 3;
     	}
     	return movedefSpeedMod;
     }
@@ -441,6 +447,9 @@ public class Player extends Sprite{
     		if(tilesOn.contains("forest") && upgrades.contains("Arboreal Essence")) { //Giving the appropriate attack mod increase for the Arboreal Essence upgrade in forests
     			tempAttackMod = 4;
     		}
+    		if(nearBeacon) {
+    			tempAttackMod -= getAttackPower() / 3;
+    		}
     		if(upgrades.contains("Magic")) { //Creates a magic hitbox for the magic upgrade paths
         		attack = new HitboxMagic(this);
         		attackCooldown = 0.2f;
@@ -479,8 +488,8 @@ public class Player extends Sprite{
         		inventory.put("Totem", 0);
                 inventory.put("Rune", 0);
                 inventory.put("Wall", 0);
-                inventory.put("Alchemy", 0);
-        	} else if(respawnTimer <= 2) { //Setting the player's position ahead of time, mostly to give the camera scrolling a head start
+                inventory.put("Beacons", 0);
+        	} else if(respawnTimer <= 5) { //Setting the player's position ahead of time, mostly to give the camera scrolling a head start
         		setPosition(basePos[0] * map.ground.getTileWidth(), basePos[1] * map.ground.getTileHeight());
         	}
     	}
@@ -489,15 +498,14 @@ public class Player extends Sprite{
     public void damageBase(int damage) {
     	//Handles damage to the base
     	baseHealth -= damage;
-    	if(baseHealth <= 0) {
-    		System.out.println(":c");
-    	}
     }
     
     public void placeItem(Field map) {
-    	if(inventory.get("Totem") > 0 || inventory.get("Rune") > 0 || inventory.get("Wall") > 0 || inventory.get("Alchemy") > 0) {
+    	//Places a placeable item onto the field from the player's inventory
+    	if(inventory.get("Totem") > 0 || inventory.get("Rune") > 0 || inventory.get("Wall") > 0 || inventory.get("Beacon") > 0) { //Ensuring there is a placeable item in inventory
     		boolean placed = false;
     		if(upgrades.contains("Natural Magic")) {
+    			//Tries to place a totem
     			placed = map.setPlaceable(tilePos(map)[0], tilePos(map)[1], Field.TOTEM);
     			if(placed) {
     				placeables.add(new Placeable(this, tilePos(map)[0] * map.ground.getTileWidth(), tilePos(map)[1] * map.ground.getTileHeight(), map, new Sprite(new Texture("Totem.png"))));
@@ -506,6 +514,7 @@ public class Player extends Sprite{
     			}
     			
     		} else if(upgrades.contains("Dark Arts")) {
+    			//tries to place a rune
     			placed = map.setPlaceable(tilePos(map)[0], tilePos(map)[1], Field.RUNEEFFECTS);
     			if(placed) {
     				placeables.add(new Placeable(this, tilePos(map)[0] * map.ground.getTileWidth(), tilePos(map)[1] * map.ground.getTileHeight(), map, new Sprite(new Texture("Rune.png"))));
@@ -513,6 +522,7 @@ public class Player extends Sprite{
 					inventory.put("Rune", curValue - 1);
     			}
     		} else if(upgrades.contains("Military")) {
+    			//tries to place a wall
     			int x, y;
     			if(lastDirectionFaced.equals("Up")) {
     				x = 0;
@@ -535,28 +545,36 @@ public class Player extends Sprite{
     			}
     			
     		} else if(upgrades.contains("Alchemy")) {
-    			placed = map.setPlaceable(tilePos(map)[0], tilePos(map)[1], Field.TOTEM);
+    			//Tries to place a beacon
+    			placed = map.setPlaceable(tilePos(map)[0], tilePos(map)[1], Field.BEACON);
     			if(placed) {
-    				placeables.add(new Placeable(this, tilePos(map)[0] * map.ground.getTileWidth(), tilePos(map)[1] * map.ground.getTileHeight(), map, new Sprite(new Texture("Totem.png"))));
-    				int curValue = inventory.get("Alchemy") == null? 0 : inventory.get("Alchemy");
-					inventory.put("Alchemy", curValue - 1);
+    				placeables.add(new Placeable(this, tilePos(map)[0] * map.ground.getTileWidth(), tilePos(map)[1] * map.ground.getTileHeight(), map, new Sprite(new Texture("Beacon.png"))));
+    				int curValue = inventory.get("Beacon") == null? 0 : inventory.get("Beacon");
+					inventory.put("Beacon", curValue - 1);
     			}
     		}
     	}
     }
     
+    public void beaconEffect() {
+    	//Determines the beacon effects in attack and movement calculations
+    	nearBeacon = true;
+    }
+    
     public boolean isVisible(Field map) {
+    	//Determines if the player should be visible or not
     	boolean visible = true;
-    	if(respawnTimer > 0) {
+    	if(respawnTimer > 0) { //Turns invisible while respawning
     		visible = false;
     	}
-    	if(upgrades.contains("Nature's Wrath") && map.ground.getCell(tilePos(map)[0], tilePos(map)[1]).getTile().getId() == Field.FOREST) {
+    	if(upgrades.contains("Nature's Wrath") && map.ground.getCell(tilePos(map)[0], tilePos(map)[1]).getTile().getId() == Field.FOREST) {//Turns invisible while in forests with nature's wrath
     		visible = false;
     	}
     	return visible;
     }
     
     public boolean isAlive() {
+    	//Checks if the player is alive
     	return health > 0;
     }
     
@@ -650,6 +668,26 @@ public class Player extends Sprite{
 
 	public void setShop(Shop shop) {
 		this.shop = shop;
+	}
+	
+	public void resetBeacon() {
+		nearBeacon = false;
+	}
+	
+	public float getRespawnTimer() {
+		return respawnTimer;
+	}
+	
+	public boolean isBaseAlive() {
+		//Returns a win condition to make sure this player can still win
+		boolean winCon = true;
+		if(baseDown && baseHealth <= 0) { //Sets a loss if the player has placed a base and the base has been slain
+			winCon = false;
+		} else if(!baseDown && health <= 0) { //Sets a loss if the player has not placed a base and has themselves died
+			winCon = false;
+		}
+		
+		return winCon;
 	}
 	
 }

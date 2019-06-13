@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.2.4" name="Field" tilewidth="32" tileheight="32" tilecount="18" columns="0">
+<tileset version="1.2" tiledversion="1.2.4" name="Field" tilewidth="32" tileheight="32" tilecount="19" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="1">
   <properties>
@@ -129,5 +129,12 @@
  </tile>
  <tile id="21">
   <image width="32" height="32" source="RuneEffects-3.png.png"/>
+ </tile>
+ <tile id="22">
+  <properties>
+   <property name="TerrainType" value="Trap"/>
+   <property name="blocked" type="bool" value="false"/>
+  </properties>
+  <image width="32" height="32" source="Beacon.png"/>
  </tile>
 </tileset>

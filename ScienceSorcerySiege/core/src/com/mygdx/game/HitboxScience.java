@@ -83,6 +83,8 @@ public class HitboxScience extends Hitbox{
 					setBounds(getX() - GROWTH * growthMod, getY() + GROWTH * growthMod, getWidth() + GROWTH * growthMod * 2, getHeight() + GROWTH * growthMod * 2);
 				} else if(getDirection().equals("Left")) {
 					setBounds(getX() + GROWTH * growthMod, getY() - GROWTH * growthMod, getWidth() + GROWTH * growthMod * 2, getHeight() + GROWTH * growthMod * 2);
+				} else if(getDirection().equals("Down")) {
+					setBounds(getX() + GROWTH * growthMod, getY() + GROWTH * growthMod, getWidth() + GROWTH * growthMod * 2, getHeight() + GROWTH * growthMod * 2);
 				} else {
 					setBounds(getX() - GROWTH * growthMod, getY() - GROWTH * growthMod, getWidth() + GROWTH * growthMod * 2, getHeight() + GROWTH * growthMod * 2);
 				}

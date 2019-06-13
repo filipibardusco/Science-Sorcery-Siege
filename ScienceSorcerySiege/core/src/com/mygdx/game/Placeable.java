@@ -43,12 +43,12 @@ public class Placeable extends Sprite{
 		if(dy * dy + dx * dx < attackRadius * attackRadius) {
 			isNear = true;
 		}
-		if(isNear && lastAttack + COOLDOWN <= totalTime) {
+		if(isNear) {
 			lastAttack = totalTime;
-			if(owner.upgrades.contains("Natural Magic")) {
+			if(owner.upgrades.contains("Natural Magic") && lastAttack + COOLDOWN <= totalTime) {
 				p.takeDamage(attack, 0); //Totems deal damage to players
 			} else if(owner.upgrades.contains("Alchemy")) {
-				//Do alchemy things
+				p.beaconEffect();
 			}
 		}
 	}
@@ -77,16 +77,20 @@ public class Placeable extends Sprite{
 		} else {
 			isVisible = true;
 		}
-		if(type.equals("Natural Magic") || type.equals("Alchemy")) {
+		if(type.equals("Natural Magic")) {
 			attackRadius = 300;
 			attack = 5;
-			health = 50;
+			health = 30;
+		} else if(type.equals("Alchemy")) {
+			attackRadius = 130;
+			attack = 5;
+			health = 30;
 		} else if(type.equals("Dark Arts")) {
-			health = 10;
+			health = 15;
 			attack = owner.getAttackPower() + owner.getAttackMod();
 			attackRadius = 0;
 		} else if(type.equals("Military")) {
-			health = 100;
+			health = 75;
 			attack = 0;
 			attackRadius = 0;
 		}
