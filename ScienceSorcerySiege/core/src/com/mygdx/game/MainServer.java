@@ -1,32 +1,90 @@
 package com.mygdx.game;
 
+import sun.awt.image.ImageWatched;
+import sun.font.TrueTypeFont;
+
+import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.io.PrintWriter;
-import java.io.BufferedReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.util.Scanner;
+import java.util.concurrent.LinkedBlockingDeque;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.SynchronousQueue;
+import java.net.InetAddress;
 
 public class MainServer {
 
     public static void main(String[] args) {
-        Scanner input = new Scanner(System.in);
+
+        byte[] address = new byte[]{127,0,0,1};
         try {
-            Socket connector = new Socket(); //Makes a new socket object for connection
-            connector.connect(new InetSocketAddress("127.0.0.1", 3000), 5000); // Connecting to the server
-            System.out.println("Connected");
-            String text;
-            PrintWriter out = new PrintWriter(connector.getOutputStream(), true); // Creates a writer to decode the inbound data
-            BufferedReader in = new BufferedReader(new InputStreamReader(connector.getInputStream())); // Create a buffer reader to write outbound data
-            while (true) {
-                text = input.nextLine();
-                out.write(text+"\n"); // Sends the data \n is needed because the buffer reader on the server side reads until a new line character
-                out.flush(); // flush the data out to ensure its sent
+            ServerSocket server = new ServerSocket(3000, 10, InetAddress.getByAddress(address));
+
+            Socket client = server.accept(); // Accepting the player connection
+            System.out.println("Connection established");
+            clientConnection player = new clientConnection(client); // Creating a new thread and starting it
+
+            Scanner stdin = new Scanner(System.in);
+
+            while (player.clientSocket.isConnected()){
+                try {
+                    player.sendQueue.put(stdin.nextLine());
+                } catch (InterruptedException e) {
+
+                }
             }
-        } catch (IOException e){
-
+        } catch (IOException e) {
+            System.exit(9);
         }
+    }
+}
 
+
+class clientConnection{
+
+    Socket clientSocket;
+    PrintWriter out;
+    BufferedReader in;
+    LinkedBlockingQueue<String> sendQueue = new LinkedBlockingQueue<>();
+    Thread writer;
+    Thread reader;
+
+    clientConnection(Socket client) {
+        try {
+            this.clientSocket = client;
+            this.out = new PrintWriter(clientSocket.getOutputStream(), true);
+            this.in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+            this.writer = new Thread(() -> {
+                while (clientSocket.isConnected()) {
+                    try{
+                        String message = sendQueue.take();
+                        out.write(message+"\n");
+                        out.flush();
+                    } catch (Exception e) {
+                    }
+                }
+            });
+
+            this.writer.start();
+
+            this.reader = new Thread(() -> {
+                String temp;
+                while (clientSocket.isConnected()) {
+                    try{
+                        temp = in.readLine();
+                        System.out.println(temp);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+            this.reader.start();
+
+        } catch (Exception e) {
+        }
     }
 }
