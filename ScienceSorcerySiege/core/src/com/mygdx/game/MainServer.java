@@ -18,27 +18,33 @@ import java.net.InetAddress;
 
 public class MainServer {
 
-    public static void main(String[] args) {
+    private String ip;
+    private clientConnection player;
 
-        byte[] address = new byte[]{127,0,0,1};
+
+    public MainServer (String ip) {
+        this.ip = ip;
+    }
+
+    public void run () {
         try {
-            ServerSocket server = new ServerSocket(3000, 10, InetAddress.getByAddress(address));
+            ServerSocket server = new ServerSocket(3000, 10, InetAddress.getByName(ip));
 
+            System.out.println("Waiting for connection.");
             Socket client = server.accept(); // Accepting the player connection
             System.out.println("Connection established");
-            clientConnection player = new clientConnection(client); // Creating a new thread and starting it
+            this.player = new clientConnection(client); // Creating a new thread and starting it
 
-            Scanner stdin = new Scanner(System.in);
-
-            while (player.clientSocket.isConnected()){
-                try {
-                    player.sendQueue.put(stdin.nextLine());
-                } catch (InterruptedException e) {
-
-                }
-            }
         } catch (IOException e) {
             System.exit(9);
+        }
+    }
+
+    public void send(String str) {
+        try{
+            player.sendQueue.put(str);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 }
