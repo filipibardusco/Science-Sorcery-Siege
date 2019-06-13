@@ -7,14 +7,23 @@ import java.net.Socket;
 import java.io.PrintWriter;
 import java.io.BufferedReader;
 import java.util.Scanner;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class MainClient {
 
-    public static void main(String[] args) {
+    private LinkedBlockingQueue<String> sendqueue;
+    private String ip;
+
+    public MainClient(String ip) {
+        this.sendqueue = new LinkedBlockingQueue<String>();
+        this.ip = ip;
+    }
+
+    public void run() {
         Scanner input = new Scanner(System.in);
         try {
             Socket connector = new Socket(); // Makes a new socket object
-            connector.connect(new InetSocketAddress("127.0.0.1", 3000), 5000); // Connecting to the server
+            connector.connect(new InetSocketAddress(ip, 3000), 5000); // Connecting to the server
             System.out.println("Connected");
             String text;
             PrintWriter out = new PrintWriter(connector.getOutputStream(), true); // Creates a writer to decode the inbound data
@@ -32,14 +41,28 @@ public class MainClient {
 
             reader.start();
 
-            while (true) {
-                text = input.nextLine();
-                out.write(text+"\n"); // Sends the data \n is needed because the buffer reader on the server side reads until a new line character
-                out.flush();
-            }
+            Thread writer = new Thread(() -> {
+                while (connector.isConnected()) {
+                    try{
+                        out.write(this.sendqueue.take());
+                        out.flush();
+                    } catch (Exception e) {
+                    }
+                }
+            });
+
+            reader.start();
+
         } catch (IOException e){
-
+            e.printStackTrace();
         }
+    }
 
+    public void send(String str) {
+        try {
+            sendqueue.put(str);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
