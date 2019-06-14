@@ -51,7 +51,7 @@ public class MainClient {
                 }
             });
 
-            reader.start();
+            writer.start();
 
         } catch (IOException e){
             e.printStackTrace();
