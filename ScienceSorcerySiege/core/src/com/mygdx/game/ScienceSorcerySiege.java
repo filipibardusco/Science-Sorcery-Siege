@@ -3,6 +3,8 @@ package com.mygdx.game;
 
 
 import java.util.ArrayList;
+import java.util.Scanner;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
@@ -18,32 +20,49 @@ import com.badlogic.gdx.maps.tiled.TiledMapTileLayer;
 import com.badlogic.gdx.maps.tiled.renderers.OrthogonalTiledMapRenderer;
 
 public class ScienceSorcerySiege extends ApplicationAdapter{
-	SpriteBatch batch;
+	SpriteBatch batch; //The batch that draws sprites
 	float w; //The width of the screen in pixels
 	float h; //The width of the screen in pixels
 	Field map; //The game map that players traverse
 	OrthographicCamera camera; //The camera that displays certain points of the screen
 	TiledMapRenderer tiledMapRenderer; //Allows the tiled map to be rendered
-	//Player player; //The controlled player character
-	Player[] players;
-	ArrayList<Enemy> enemies;
-	ArrayList<String> enemyMoveDir;
-	float spawnTimer;
-	private float totalTime;
-	BitmapFont itemFont;
+	Player[] players; //Array of both players, 0 is the one this player is controlling, 1 is the opponent
+	ArrayList<Enemy> enemies; //ArrayList containing all the enemies currently on the field
+	float spawnTimer; //Spawn timer for how causing enemies to spawn in periodically
+	private float totalTime; //The total amount elapsed since the start of the game
+	//Unselected product fonts
+	BitmapFont itemFont; 
 	BitmapFont descFont;
+	//Bold fonts
 	BitmapFont itemFontS;
 	BitmapFont descFontS;
 	
-	BitmapFont generalFont;
-	BitmapFont endFont;
-	boolean respawnCountdown;
+	BitmapFont generalFont; //General font used for information such as godl and health
+	BitmapFont endFont; //Font used for things such as the respawn timer and you win/lose screens
+	boolean respawnCountdown; //The countdown until the player controlled character respawns
 	
-	
+	boolean isHost;
+	MainServer host;
+	MainClient client;
 	
 
 	@Override
 	public void create () {
+		//Initiates fields
+		Scanner kb = new Scanner(System.in);
+		String input = "";
+		while(!input.equals("H") && !input.equals("F")) {
+			System.out.println("Would you like to Host (H) or find (F) a game?");
+			input = kb.nextLine();
+			if(input.equals("H")) {
+				host = new MainServer();
+				isHost = true;
+			} else if(input.equals("F")) {
+				client = new MainClient();
+				isHost = false;
+			}
+		}
+		kb.close();
 		batch = new SpriteBatch();
 		//setting variables for easy access to screen dimensions
 		w = Gdx.graphics.getWidth();
@@ -72,47 +91,55 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
         endFont = new BitmapFont();
 		endFont.getData().setScale(2);
         
-        Texture playerTex = new Texture("playerStartSprite.png");
+        Texture playerTex = new Texture("playerStartSprite.png"); //The original player character that everyone starts as
 		
-		//players = new Player[2];
         players = new Player[2];
-		players[0] = new Player(new Sprite(playerTex), 5, 5);
-		players[1] = new Player(new Sprite(playerTex), 100, 100);
+		players[0] = new Player(new Sprite(playerTex), 5, 5); //Player controlled
+		players[1] = new Player(new Sprite(playerTex), 100, 100); //Enemy controlled
 		
 		enemies = new ArrayList<Enemy>();
-        enemyMoveDir = new ArrayList<String>();
         
-        map = new Field(40);
+		
+		if(isHost) {
+			map = new Field(40); //Creates the field
+			
+			map.toString();
+		} else {
+			map = new Field("", 40); //Creates the field
+		}
         tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
-        players[0].setGameState("Field");
+        players[0].setGameState("Field"); //Sets both players' game states to field, which is where they'll begin
+        players[1].setGameState("Field");
 	}
 
 	@Override
 	public void render () {
-		if(players[0].isBaseAlive() && players[1].isBaseAlive()) {
-			String signal = "";
+		//Processes all game actions and draws onto the screen
+		if(players[0].isBaseAlive() && players[1].isBaseAlive()) { //Ensures that the game has not yet been won/lost before actually playing it
+			String signalSent = ""; //String to send to opponent to communicate actions done
 			if(players[0].isAlive()) {
 				respawnCountdown = false;
-				signal = players[0].kbInput(map, camera); //Getting all player input and determining the game state based off of that
+				signalSent = players[0].kbInput(map, camera); //Getting all player input and determining the game state based off of that
 			} else {
-				respawnCountdown = true;
+				respawnCountdown = true; //ensures that the respawn countdown will be drawn while the player is dead
 			}
 			if(players[1].isAlive()) {
-				players[1].networkInput(map, camera, signal);
+				players[1].networkInput(map, camera, signalSent); //Processing the opponent's actions
+				//players[1].networkInput(map, camera, signalReceived);
 			}
 			for(Player player : players) {
 				player.update(Gdx.graphics.getRawDeltaTime(), camera, map); //Delta time used for smooth movements
 				if(player.baseDown) {
 					for(Product p : player.getShop().displayProducts()) {
 						if(player.getShop().upgrades.contains(p)) {
-							p.passTime(Gdx.graphics.getRawDeltaTime());
+							p.passTime(Gdx.graphics.getRawDeltaTime()); //Counting down the timer on all upgrades available to players
 						}
 					}
 				}
-				player.countRespawn(Gdx.graphics.getRawDeltaTime(), map);
+				player.countRespawn(Gdx.graphics.getRawDeltaTime(), map); //Counts down each player's respawn timer if they are dead
 			}
-			spawnEnemies();
-			if(players[0].getGameState().equals("Field")) {
+			spawnEnemies(); //Spawns enemies onto the map when appropriate
+			if(players[0].getGameState().equals("Field")) { //Handles camera work
 				if(players[0].getX() - camera.position.x > w * camera.zoom - 250  && camera.position.x + w * camera.zoom / 2 < map.ground.getWidth() * map.ground.getTileWidth()) { //Scrolling when at right side of the screen
 					camera.translate(players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map), 0);
 					
@@ -120,19 +147,19 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 					camera.translate(-players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map), 0);
 					
 				}
-				if(players[0].getY() - camera.position.y > h * camera.zoom - 250  && camera.position.y + h * camera.zoom / 2 < map.ground.getHeight() * map.ground.getTileHeight()) { //Scrolling when at right side of the screen
+				if(players[0].getY() - camera.position.y > h * camera.zoom - 250  && camera.position.y + h * camera.zoom / 2 < map.ground.getHeight() * map.ground.getTileHeight()) { //Scrolling when at the top of the screen
 					camera.translate(0, players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map));
 				} else if(players[0].getY() - camera.position.y < -1 * h * camera.zoom + 250 && camera.position.y > h * camera.zoom / 2) { //Scrolling when at left
 					camera.translate(0, -players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map));
 				}
-			} else {
-				for(Player p : players) {
-					if(p.getGameState().equals("Upgraded")) {
-						p.setGameState("Shop");
-						p.getShop().determineUpgrades(p);
-					}
+			}
+			for(Player p : players) {
+				if(p.getGameState().equals("Upgraded")) { //recalculates the products that should be on display for the player
+					p.setGameState("Shop");
+					p.getShop().determineUpgrades(p);
 				}
-			} if(players[0].getGameState().equals("Shop")) {
+			}
+			if(players[0].getGameState().equals("Shop")) { //Sets the position of the shop
 				players[0].getShop().setPosition(camera.position.x - w / 2 * camera.zoom, camera.position.y - h / 2 * camera.zoom);
 				for(Product p : players[0].getShop().displayProducts()) {
 					p.setPosition(players[0].getShop().getX() + p.relativeX, players[0].getShop().getY() + p.relativeY);
