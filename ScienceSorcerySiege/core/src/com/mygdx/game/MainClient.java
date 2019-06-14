@@ -13,6 +13,7 @@ public class MainClient {
 
     private LinkedBlockingQueue<String> sendqueue;
     private String ip;
+    public String hostMap;
 
     public MainClient(String ip) {
         this.sendqueue = new LinkedBlockingQueue<String>();
@@ -30,10 +31,16 @@ public class MainClient {
             BufferedReader in = new BufferedReader(new InputStreamReader(connector.getInputStream())); // Create a buffer reader to write outbound data
             Thread reader = new Thread(() -> {
                 String temp;
+                try {
+                    hostMap = in.readLine();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 while (connector.isConnected()) {
                     try{
                         temp = in.readLine();
                         System.out.println(temp);
+
                     } catch (Exception e) {
                     }
                 }
