@@ -31,20 +31,20 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 	float spawnTimer; //Spawn timer for how causing enemies to spawn in periodically
 	private float totalTime; //The total amount elapsed since the start of the game
 	//Unselected product fonts
-	BitmapFont itemFont; 
+	BitmapFont itemFont;
 	BitmapFont descFont;
 	//Bold fonts
 	BitmapFont itemFontS;
 	BitmapFont descFontS;
-	
+
 	BitmapFont generalFont; //General font used for information such as godl and health
 	BitmapFont endFont; //Font used for things such as the respawn timer and you win/lose screens
 	boolean respawnCountdown; //The countdown until the player controlled character respawns
-	
+
 	boolean isHost;
-	MainServer host;
-	MainClient client;
-	
+	public MainServer host;
+	public MainClient client;
+
 
 	@Override
 	public void create () {
@@ -55,10 +55,12 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			System.out.println("Would you like to Host (H) or find (F) a game?");
 			input = kb.nextLine();
 			if(input.equals("H")) {
-				host = new MainServer();
+				host = new MainServer("192.168.1.22");
+				host.run();
 				isHost = true;
 			} else if(input.equals("F")) {
-				client = new MainClient();
+				client = new MainClient("192.168.1.22");
+				client.run();
 				isHost = false;
 			}
 		}
@@ -66,50 +68,50 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 		batch = new SpriteBatch();
 		//setting variables for easy access to screen dimensions
 		w = Gdx.graphics.getWidth();
-        h = Gdx.graphics.getHeight();
-        camera = new OrthographicCamera();
-        camera.zoom -= 0.7; //Zooming in the camera to adjust for small tile sizes
-        camera.setToOrtho(false, w, h);
-        camera.update();
-        itemFont = new BitmapFont();
-        descFont = new BitmapFont();
-        itemFont.getData().setScale(0.5f);
-        itemFont.setColor(0, 0, 0, 0.7f);
-        descFont.getData().setScale(0.4f);
-        descFont.setColor(0, 0, 0, 0.7f);
-        
-        itemFontS = new BitmapFont();
-        descFontS = new BitmapFont();
-        generalFont = new BitmapFont();
-        itemFontS.getData().setScale(0.5f);
-        itemFontS.setColor(0, 0, 0, 1);
-        descFontS.getData().setScale(0.4f);
-        descFontS.setColor(0, 0, 0, 1);
-        generalFont.getData().setScale(0.65f);
-        itemFontS.setColor(0, 0, 0, 1);
-        
-        endFont = new BitmapFont();
+		h = Gdx.graphics.getHeight();
+		camera = new OrthographicCamera();
+		camera.zoom -= 0.7; //Zooming in the camera to adjust for small tile sizes
+		camera.setToOrtho(false, w, h);
+		camera.update();
+		itemFont = new BitmapFont();
+		descFont = new BitmapFont();
+		itemFont.getData().setScale(0.5f);
+		itemFont.setColor(0, 0, 0, 0.7f);
+		descFont.getData().setScale(0.4f);
+		descFont.setColor(0, 0, 0, 0.7f);
+
+		itemFontS = new BitmapFont();
+		descFontS = new BitmapFont();
+		generalFont = new BitmapFont();
+		itemFontS.getData().setScale(0.5f);
+		itemFontS.setColor(0, 0, 0, 1);
+		descFontS.getData().setScale(0.4f);
+		descFontS.setColor(0, 0, 0, 1);
+		generalFont.getData().setScale(0.65f);
+		itemFontS.setColor(0, 0, 0, 1);
+
+		endFont = new BitmapFont();
 		endFont.getData().setScale(2);
-        
-        Texture playerTex = new Texture("playerStartSprite.png"); //The original player character that everyone starts as
-		
-        players = new Player[2];
+
+		Texture playerTex = new Texture("playerStartSprite.png"); //The original player character that everyone starts as
+
+		players = new Player[2];
 		players[0] = new Player(new Sprite(playerTex), 5, 5); //Player controlled
 		players[1] = new Player(new Sprite(playerTex), 100, 100); //Enemy controlled
-		
+
 		enemies = new ArrayList<Enemy>();
-        
-		
+
+
 		if(isHost) {
 			map = new Field(40); //Creates the field
-			
-			map.toString();
+
+			host.send(map.toString());
 		} else {
-			map = new Field("", 40); //Creates the field
+			map = new Field(client.hostMap, 40); //Creates the field
 		}
-        tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
-        players[0].setGameState("Field"); //Sets both players' game states to field, which is where they'll begin
-        players[1].setGameState("Field");
+		tiledMapRenderer = new OrthogonalTiledMapRenderer(map);
+		players[0].setGameState("Field"); //Sets both players' game states to field, which is where they'll begin
+		players[1].setGameState("Field");
 	}
 
 	@Override
@@ -120,6 +122,7 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			if(players[0].isAlive()) {
 				respawnCountdown = false;
 				signalSent = players[0].kbInput(map, camera); //Getting all player input and determining the game state based off of that
+				host.send(signalSent);
 			} else {
 				respawnCountdown = true; //ensures that the respawn countdown will be drawn while the player is dead
 			}
@@ -142,10 +145,10 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			if(players[0].getGameState().equals("Field")) { //Handles camera work
 				if(players[0].getX() - camera.position.x > w * camera.zoom - 250  && camera.position.x + w * camera.zoom / 2 < map.ground.getWidth() * map.ground.getTileWidth()) { //Scrolling when at right side of the screen
 					camera.translate(players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map), 0);
-					
+
 				} else if(players[0].getX() - camera.position.x < -1 * w * camera.zoom + 250 && camera.position.x > w * camera.zoom / 2) { //Scrolling when at left
 					camera.translate(-players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map), 0);
-					
+
 				}
 				if(players[0].getY() - camera.position.y > h * camera.zoom - 250  && camera.position.y + h * camera.zoom / 2 < map.ground.getHeight() * map.ground.getTileHeight()) { //Scrolling when at the top of the screen
 					camera.translate(0, players[0].getdefSpeed() * Gdx.graphics.getRawDeltaTime() * players[0].moveMod(map));
@@ -188,17 +191,17 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 					for(Enemy e : enemies) {
 						if(p.isAttacking()) {
 							if(p.getAttack().collide(e)) {
-			        			if(e.getHealth() <= 0) {
-			        				deadEnemies.add(e);
-			        				if(p.upgrades.contains("Soul Thief")) {
-			        					p.setAttackPower(p.getAttackPower() + 1);
-			        					p.setHealth(Math.min(p.getHealth() + 1, p.maxHealth));
-			        					p.setdefSpeed(p.getdefSpeed() + 1);
-			        				}
-			        			}
-			        		}
+								if(e.getHealth() <= 0) {
+									deadEnemies.add(e);
+									if(p.upgrades.contains("Soul Thief")) {
+										p.setAttackPower(p.getAttackPower() + 1);
+										p.setHealth(Math.min(p.getHealth() + 1, p.maxHealth));
+										p.setdefSpeed(p.getdefSpeed() + 1);
+									}
+								}
+							}
 						}
-		        	}
+					}
 					enemies.removeAll(deadEnemies);
 				}
 				for(Player opponent : players) {
@@ -232,72 +235,72 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 			//Drawing tiles
 			camera.update();
-	        tiledMapRenderer.setView(camera);
-	        tiledMapRenderer.render();
-	        batch.setProjectionMatrix(camera.combined);
-	        
-	        batch.begin();
-	        for(Player p : players) {
-	        	if(p.isVisible(map)) {
-	        		p.draw(batch);
-	        	}
-	            for(Enemy e : enemies) {
-	            	e.collide(p);
-	            	e.draw(batch);
-	            }
-	            if(p.isAttacking()) {
-	            	p.getAttack().draw(batch);
-	            }
-	            for(Placeable item : p.placeables) {
-	            	if(item.isVisible()) {
-	            		item.draw(batch);
-	            	}
-	            }
-	        }
-	        
-	        if(players[0].getGameState().equals("Shop")) {
-	        	players[0].getShop().draw(batch);
-	        	for(Product p : players[0].getShop().displayProducts()) {
-	        		p.draw(batch);
-	        		GlyphLayout itemGlyth = new GlyphLayout();
-	        		String reqName = players[0].getShop().upgrades.contains(p)? " seconds" : " gold";
-	        		if(p.selected) {
-	            		itemGlyth.setText(itemFontS, p.name);
-	            		itemFontS.draw(batch, itemGlyth, p.getX() + (p.getWidth() - itemGlyth.width) / 2, p.getY() + p.getHeight() - 3);
-	            		
-	            		GlyphLayout descGlyth = new GlyphLayout();
-	            		descGlyth.setText(descFontS, p.description, descFontS.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
-	            		descFontS.draw(batch, descGlyth, p.getX() + (p.getWidth() - descGlyth.width) / 2, p.getY() + p.getHeight() - 10);
-	            		
-	            		if(p.requirement > 0) {
-	            			GlyphLayout timeGlyth = new GlyphLayout();
-	                		timeGlyth.setText(descFontS, (int) p.requirement + reqName, descFontS.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
-	                		descFontS.draw(batch, timeGlyth, p.getX() + 5, p.getY() + p.getHeight() - 3);
-	            		}
-	            		
-	        		} else {
-	            		itemGlyth.setText(itemFont, p.name);
-	            		itemFont.draw(batch, itemGlyth, p.getX() + (p.getWidth() - itemGlyth.width) / 2, p.getY() + p.getHeight() - 3);
-	            		
-	            		GlyphLayout descGlyth = new GlyphLayout();
-	            		descGlyth.setText(descFont, p.description, descFont.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
-	            		descFont.draw(batch, descGlyth, p.getX() + (p.getWidth() - descGlyth.width) / 2, p.getY() + p.getHeight() - 10);
-	            		
-	            		if(p.requirement > 0) {
-	            			GlyphLayout timeGlyth = new GlyphLayout();
-	                		timeGlyth.setText(descFont, (int) p.requirement + reqName, descFont.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
-	                		descFont.draw(batch, timeGlyth, p.getX() + 5, p.getY() + p.getHeight() - 3);
-	            		}
-	        		}
-	        	}
-	        	generalFont.draw(batch, "Base Health: " + players[0].getBaseHealth(), (w / 2 - 100) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (50) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
-		        
-	        }
-	        if(respawnCountdown) {
-	        	endFont.draw(batch, "" + ((int) players[0].getRespawnTimer() + 1), (w / 2 - 50) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h / 2) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
-	        }
-	        generalFont.draw(batch, "Gold: " + players[0].money, (w - 150) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h - 20) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
-	        generalFont.draw(batch, "Health: " + players[0].getHealth(), (w - 950) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h - 20) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
+			tiledMapRenderer.setView(camera);
+			tiledMapRenderer.render();
+			batch.setProjectionMatrix(camera.combined);
+
+			batch.begin();
+			for(Player p : players) {
+				if(p.isVisible(map)) {
+					p.draw(batch);
+				}
+				for(Enemy e : enemies) {
+					e.collide(p);
+					e.draw(batch);
+				}
+				if(p.isAttacking()) {
+					p.getAttack().draw(batch);
+				}
+				for(Placeable item : p.placeables) {
+					if(item.isVisible()) {
+						item.draw(batch);
+					}
+				}
+			}
+
+			if(players[0].getGameState().equals("Shop")) {
+				players[0].getShop().draw(batch);
+				for(Product p : players[0].getShop().displayProducts()) {
+					p.draw(batch);
+					GlyphLayout itemGlyth = new GlyphLayout();
+					String reqName = players[0].getShop().upgrades.contains(p)? " seconds" : " gold";
+					if(p.selected) {
+						itemGlyth.setText(itemFontS, p.name);
+						itemFontS.draw(batch, itemGlyth, p.getX() + (p.getWidth() - itemGlyth.width) / 2, p.getY() + p.getHeight() - 3);
+
+						GlyphLayout descGlyth = new GlyphLayout();
+						descGlyth.setText(descFontS, p.description, descFontS.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
+						descFontS.draw(batch, descGlyth, p.getX() + (p.getWidth() - descGlyth.width) / 2, p.getY() + p.getHeight() - 10);
+
+						if(p.requirement > 0) {
+							GlyphLayout timeGlyth = new GlyphLayout();
+							timeGlyth.setText(descFontS, (int) p.requirement + reqName, descFontS.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
+							descFontS.draw(batch, timeGlyth, p.getX() + 5, p.getY() + p.getHeight() - 3);
+						}
+
+					} else {
+						itemGlyth.setText(itemFont, p.name);
+						itemFont.draw(batch, itemGlyth, p.getX() + (p.getWidth() - itemGlyth.width) / 2, p.getY() + p.getHeight() - 3);
+
+						GlyphLayout descGlyth = new GlyphLayout();
+						descGlyth.setText(descFont, p.description, descFont.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
+						descFont.draw(batch, descGlyth, p.getX() + (p.getWidth() - descGlyth.width) / 2, p.getY() + p.getHeight() - 10);
+
+						if(p.requirement > 0) {
+							GlyphLayout timeGlyth = new GlyphLayout();
+							timeGlyth.setText(descFont, (int) p.requirement + reqName, descFont.getColor(), p.getWidth() - 10, (int) (p.getX() + p.getWidth() - 10), true);
+							descFont.draw(batch, timeGlyth, p.getX() + 5, p.getY() + p.getHeight() - 3);
+						}
+					}
+				}
+				generalFont.draw(batch, "Base Health: " + players[0].getBaseHealth(), (w / 2 - 100) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (50) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
+
+			}
+			if(respawnCountdown) {
+				endFont.draw(batch, "" + ((int) players[0].getRespawnTimer() + 1), (w / 2 - 50) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h / 2) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
+			}
+			generalFont.draw(batch, "Gold: " + players[0].money, (w - 150) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h - 20) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
+			generalFont.draw(batch, "Health: " + players[0].getHealth(), (w - 950) * camera.zoom + camera.position.x - w / 2 * camera.zoom, (h - 20) * camera.zoom + camera.position.y - w / 2 * camera.zoom);
 			batch.end();
 		} else {
 			Gdx.gl.glClearColor(0, 0, 0, 1);
@@ -310,7 +313,7 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			}
 			batch.end();
 		}
-		
+
 	}
 
 	private void spawnEnemies() {
@@ -326,16 +329,16 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 					TiledMapTileLayer l = (TiledMapTileLayer) layer;
 					if(!invalidPos) {
 						invalidPos = (Boolean) l.getCell((int) ((enemyX) / l.getTileWidth()), (int) ((enemyY + 16 - 1) / l.getTileHeight())).getTile().getProperties().get("blocked");
-					} 
+					}
 					if(!invalidPos) {
 						invalidPos = (Boolean) l.getCell((int) ((enemyX) / l.getTileWidth()), (int) ((enemyY) / l.getTileHeight())).getTile().getProperties().get("blocked");
-					} 
+					}
 					if(!invalidPos) {
 						invalidPos = (Boolean) l.getCell((int) ((enemyX + 16 - 1) / l.getTileWidth()), (int) ((enemyY + 16 - 1) / l.getTileHeight())).getTile().getProperties().get("blocked");
-					} 
+					}
 					if(!invalidPos) {
 						invalidPos = (Boolean) l.getCell((int) ((enemyX + 16 - 1) / l.getTileWidth()), (int) ((enemyY) / l.getTileHeight())).getTile().getProperties().get("blocked");
-					} 
+					}
 				}
 				if(!invalidPos) {
 					potentialEnemy = new Enemy((int) totalTime, enemyX, enemyY);
@@ -354,15 +357,15 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 	public void dispose () {
 		batch.dispose();
 	}
-	
+
 	public void countTime() {
 		totalTime += Gdx.graphics.getRawDeltaTime();
 		if(spawnTimer > 0) {
 			spawnTimer -= Gdx.graphics.getRawDeltaTime();
 		}
 	}
-	
+
 	public static int randint(int low, int high){
-	    return (int)(Math.random()*(high-low+1) + low);
+		return (int)(Math.random()*(high-low+1) + low);
 	}
 }
