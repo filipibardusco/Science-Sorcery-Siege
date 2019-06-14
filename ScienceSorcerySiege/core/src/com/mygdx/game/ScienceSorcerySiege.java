@@ -122,7 +122,7 @@ public class ScienceSorcerySiege extends ApplicationAdapter{
 			if(players[0].isAlive()) {
 				respawnCountdown = false;
 				signalSent = players[0].kbInput(map, camera); //Getting all player input and determining the game state based off of that
-				host.send(signalSent);
+//				host.send(signalSent);
 			} else {
 				respawnCountdown = true; //ensures that the respawn countdown will be drawn while the player is dead
 			}
