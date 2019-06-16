@@ -257,7 +257,7 @@ public class Player extends Sprite{
     
     public String kbInput(Field map, OrthographicCamera camera) {
     	//Gets player related keyboard input and returns a string to send to the other player
-    	String signal = "";
+    	String signal = "p";
     	//Movement speed calculations
     	if(gameState.equals("Field")) {
     		if(Gdx.input.isKeyPressed(Keys.D)){
@@ -438,7 +438,7 @@ public class Player extends Sprite{
 
 	public void repairBase(int i) {
 		//Repairs the base up to a maximum health of 500
-		baseHealth = Math.max(baseHealth + i, 500);
+		baseHealth = Math.min(baseHealth + i, 500);
 	}
 
 	public void attack() {
@@ -463,7 +463,6 @@ public class Player extends Sprite{
     public void takeDamage(int damage, float invin) {
     	//Takes damage, handles death, and sets invincibility for damage taken
 		if(health >= 0) {
-    		System.out.println(health);
     		health -= damage;
         	setInvincibility(invin);
         	if(health <= 0) { //Handles death

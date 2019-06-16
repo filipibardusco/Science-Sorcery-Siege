@@ -14,6 +14,8 @@ public class MainClient {
     private LinkedBlockingQueue<String> sendqueue;
     private String ip;
     public String hostMap;
+    public String moveInput = "";
+    public String eInput = "";
 
     public MainClient(String ip) {
         this.sendqueue = new LinkedBlockingQueue<String>();
@@ -30,16 +32,21 @@ public class MainClient {
             PrintWriter out = new PrintWriter(connector.getOutputStream(), true); // Creates a writer to decode the inbound data
             BufferedReader in = new BufferedReader(new InputStreamReader(connector.getInputStream())); // Create a buffer reader to write outbound data
             Thread reader = new Thread(() -> {
-                String temp;
+                
                 try {
+                	
                     hostMap = in.readLine();
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 while (connector.isConnected()) {
                     try{
-                        temp = in.readLine();
-                        System.out.println(temp);
+                    	String i = in.readLine();
+                    	if(i.split(" ")[0].equals("p")) {
+                    		moveInput = i.substring(1);
+                    	} else if(i.split(" ")[0].equals("e")) {
+                    		eInput = i.substring(1);
+                    	}
 
                     } catch (Exception e) {
                     }

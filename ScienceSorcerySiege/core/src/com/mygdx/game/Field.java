@@ -116,8 +116,6 @@ public class Field extends TiledMap{
 				objects.setCell(x, y, objectCell);
 			}
 		}
-		
-		
 		layers.add(ground);
 		layers.add(objects);
 	}
@@ -201,7 +199,7 @@ public class Field extends TiledMap{
 					grid += "w";
 				}
 			}
-			grid += "\n";
+			grid += "  ";
 		}
 		return grid;
 	}

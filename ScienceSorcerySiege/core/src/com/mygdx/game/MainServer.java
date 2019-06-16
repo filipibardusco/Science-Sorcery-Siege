@@ -1,8 +1,5 @@
 package com.mygdx.game;
 
-import sun.awt.image.ImageWatched;
-import sun.font.TrueTypeFont;
-
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -19,7 +16,8 @@ import java.net.InetAddress;
 public class MainServer {
 
     private String ip;
-    private clientConnection player;
+    public clientConnection player;
+    public String moveInput = "";
 
 
     public MainServer (String ip) {
@@ -34,10 +32,12 @@ public class MainServer {
             Socket client = server.accept(); // Accepting the player connection
             System.out.println("Connection established");
             this.player = new clientConnection(client); // Creating a new thread and starting it
+            moveInput = player.moveInput;
 
         } catch (IOException e) {
             System.exit(9);
         }
+        
     }
 
     public void send(String str) {
@@ -58,7 +58,8 @@ class clientConnection{
     LinkedBlockingQueue<String> sendQueue = new LinkedBlockingQueue<>();
     Thread writer;
     Thread reader;
-
+    public String moveInput = "";
+    
     clientConnection(Socket client) {
         try {
             this.clientSocket = client;
@@ -78,11 +79,11 @@ class clientConnection{
             this.writer.start();
 
             this.reader = new Thread(() -> {
-                String temp;
                 while (clientSocket.isConnected()) {
                     try{
-                        temp = in.readLine();
-                        System.out.println(temp);
+                    	moveInput = in.readLine();
+                    	System.out.println(moveInput);
+                        
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
