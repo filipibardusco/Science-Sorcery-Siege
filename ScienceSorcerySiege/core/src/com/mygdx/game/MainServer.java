@@ -6,11 +6,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.SocketTimeoutException;
-import java.util.Scanner;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.SynchronousQueue;
 import java.net.InetAddress;
 
 public class MainServer {
@@ -33,6 +29,7 @@ public class MainServer {
             System.out.println("Connection established");
             this.player = new clientConnection(client); // Creating a new thread and starting it
             moveInput = player.moveInput;
+            server.close();
 
         } catch (IOException e) {
             System.exit(9);
@@ -58,7 +55,7 @@ class clientConnection{
     LinkedBlockingQueue<String> sendQueue = new LinkedBlockingQueue<>();
     Thread writer;
     Thread reader;
-    public volatile String moveInput = "";
+    public String moveInput = "";
     
     clientConnection(Socket client) {
         try {

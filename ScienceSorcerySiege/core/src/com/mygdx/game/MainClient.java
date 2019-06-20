@@ -28,7 +28,6 @@ public class MainClient {
             Socket connector = new Socket(); // Makes a new socket object
             connector.connect(new InetSocketAddress(ip, 3000), 5000); // Connecting to the server
             System.out.println("Connected");
-            String text;
             PrintWriter out = new PrintWriter(connector.getOutputStream(), true); // Creates a writer to decode the inbound data
             BufferedReader in = new BufferedReader(new InputStreamReader(connector.getInputStream())); // Create a buffer reader to write outbound data
             Thread reader = new Thread(() -> {
@@ -64,12 +63,13 @@ public class MainClient {
                     }
                 }
             });
-
+            connector.close();
             writer.start();
 
         } catch (IOException e){
             e.printStackTrace();
         }
+        input.close();
     }
 
     public void send(String str) {
