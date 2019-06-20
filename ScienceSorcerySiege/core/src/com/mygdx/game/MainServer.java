@@ -17,7 +17,7 @@ public class MainServer {
 
     private String ip;
     public clientConnection player;
-    public String moveInput = "";
+    public volatile String moveInput = "";
 
 
     public MainServer (String ip) {
@@ -58,7 +58,7 @@ class clientConnection{
     LinkedBlockingQueue<String> sendQueue = new LinkedBlockingQueue<>();
     Thread writer;
     Thread reader;
-    public String moveInput = "";
+    public volatile String moveInput = "";
     
     clientConnection(Socket client) {
         try {
